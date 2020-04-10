@@ -31,16 +31,46 @@
  * you need to implement scheduler simlator test code.
  *
  */
+int test1(int sched_policy)
+{
+    char * task_scenario[] = 
+    {   "A, 0, 3",
+        "B, 2, 6",
+        "C, 4, 5",
+        "D, 6, 4",
+        "E, 8, 2",};
+    int scenario_length = _SIZEOF_TEST1; 
+    //이게 안되면 struct로 토큰 따서 주면 됨
+    struct sched_queue * Q [] = init_bitmap(sched_policy);
+    if (run_workload(task_scenario [], scenario_length , Q [], sched_policy)<0)
+        return -1;
+    return 1;    
+}
+int test2(int sched_policy)
+{
+    char * task_scenario[] = 
+    {   "A, 0, 3",
+        "B, 2, 6",
+        "C, 4, 5",
+        "D, 6, 4",
+        "E, 8, 2",};
+    int scenario_length = _SIZEOF_TEST2; 
+    //이게 안되면 struct로 토큰 따서 주면 됨
+    sched_queue * Q [] = init_bitmap(sched_policy);
+    if (run_workload(task_scenario [], scenario_length , Q [], sched_policy)<0)
+        return -1;
+    return 1;    
+}
 
 int main(int argc, char *argv[]){
 /*
-<test1>         <test2>
-pid r   a       pid r   a
-A   3   0       A   4   0
-B   6   2       B   16  1
-C   4   4       C   8   2
-D   5   6       D   6   2
-E   2   8       E   4   4
+<test1>                     <test2>
+pid     runt    arivt       pid r   a
+A       3       0           A   4   0
+B       6       2           B   16  1
+C       4       4           C   8   2
+D       5       6           D   6   2
+E       2       8           E   4   4
 */
     // ./out FCFS test2
     // ./out RR test1
