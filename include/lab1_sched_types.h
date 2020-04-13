@@ -80,17 +80,20 @@ typedef struct task_strct{
 	//Time that has used cpu
 
 	//Task's time
-	int				atime; 
+	int				arr_time; 
 	//Time that task arrived 
-    int             btime;
+    int				res_time;
+	//Time that task dispatch time(first cpu use) - arrive time
+	int             fin_time;
     //Time that task terminated
+
 	int				qtime; 
 	//how much time this task spent in Present Queue(MLFQ)
 	
 	//ttime //Time the task terminate
 	io_context 		*IO; 
     sched_queue		*myrq;
-
+	int				sched_priority;
 	// some struct for I/OOperation
 	#ifdef MLFQ_SCHED 
 		//int 		_levels_of_feedback_queues;

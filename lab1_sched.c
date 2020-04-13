@@ -135,7 +135,7 @@ _env_FCFS
             new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
             index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->priority = index; // 프로세스의 우선순위 결정
-            Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
+            enqueue(rq,new_task); //해당 우선순위Q에 enqueue;
             arriv--;
             new_task =NULL;
         }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
@@ -148,7 +148,7 @@ _env_FCFS
         if (curr_task->state == TASK_DONE)
             curr_task = schdule(rq);
 
-        cpu(curr_task);
+        cpu(cpu_st , curr_task);
     }//end loop
 
     if(assert(cpu_st, rq) <0) 
@@ -191,7 +191,7 @@ _env_RR
 /*2*/   if(prev_task != NULL){
             if(prev_task -> state != TASK_DONE){
                 //prev_task->priority += 1;
-                Enqueue(Q, prev_task); prev_task=NULL;
+                enqueue(rq, prev_task); prev_task=NULL;
             }else{
                 //prev_task is done
                 prev_task =NULL;
@@ -208,7 +208,7 @@ _env_RR
 /*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)){      
             curr_task=schdule(rq); tempslice =0;}
 
-/*3.2*/ cpu_st = cpu(curr_task);                
+/*3.2*/ cpu(cpu_st , curr_task);                
         tempslice++;
             
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
@@ -361,6 +361,39 @@ update_bitmap
 //#Endif __init__
 
 //#Define __schedAPI__
+//1. Queue & Scheduler
+int //return type?
+Enqueue(sched_queue * Q[], task_strct * task)
+{
+
+}
+int //return type?
+enqueue(sched_queue * rq , task_strct * task)
+{
+
+}
+task_strct*
+Schedule(sched_queue * Q[])
+{}
+
+task_strct*
+schedule(sched_queue * rq)
+{}
+
+context_save(task_strct * before_task){
+    int check = before_task->total_time - before_task->spent_time;
+    //spent time 은 cpu()에서 증감됨. total time과 cpu time은 실제 시간이 아니고 quantum시간임
+    //따라서 연산시 정수가 나옴.(0 =TASKDONE)
+    if(check == 0){
+        before_task->state = TASK_DONE;
+        before_task->fin_time = gettimeofday();
+    }
+    else{
+        before_task->state = TASK_READY;
+        if(before_task->myrq->policy == MLFQ_SCHED)
+            before_task->sched_priority += 1; //Downward priority
+    }
+}
 
 int s_assert
 (cpu_state * cpu_st, sched_queue * rq)
