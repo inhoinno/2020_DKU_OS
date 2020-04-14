@@ -1,3 +1,40 @@
+
+
+int Run_workload(char * scenario , int scenario_length ,int sched_policy);
+int _env_FCFS
+(sched_queue * rq, cpu_state * cpu_st, char * workload);
+int 
+_env_RR
+(sched_queue * rq, cpu_state * cpu_st);
+
+int 
+_env_MLFQ
+(sched_queue *Q [] , cpu_state * cpu_st);
+ 
+void cpu(cpu_state * state , task_strct * task, int timestamp);
+int EndWorkload(sched_queue * Q[], cpu_state * cpu);
+int endWorkload(sched_queue * q, cpu_state * cpu);
+int time_to_fork(char * workload [], int length, int time , int* index);
+task_strct * 
+do_fork
+(char * workload[] , int length, int * step ,int sched_policy);
+sched_queue* init_sched(int policy, int slice);
+sched_queue ** init_bitmap();
+cpu_state * init_cpu();
+
+int //return type?
+Enqueue(sched_queue * Q[], task_strct * task);
+int //return type?
+enqueue(sched_queue * rq , task_strct * task);
+task_strct* dequeue(sched_queue * rq);
+task_strct* schedule(sched_queue * rq);
+int context_save(task_strct * before_task);
+int isEmpty(sched_queue * rq);
+int isTopQueue(sched_queue ** Q, sched_queue * rq);
+int s_assert(cpu_state * cpu_st, sched_queue * rq);
+int Assert(sched_queue * Q[], cpu_state * cpu);
+
+
  case : ROUND_ROBIN_SCHED
             // 1. 스케쥴러가 수행 되어야 한다면(time out) -> schedule, dequeue
             // 2. 스케쥴러가 지정한 태스크를 cpu가 수행, cpu(curr)

@@ -74,44 +74,46 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
 
     //초기화 부분, 컴퓨터를 부팅했을때 운영체제가 테이블 초기화 하는 부분이라고 생각
     //1 cpu초기화 , runQ초기화<-sched policy 이용, 비트맵(Q위치) 초기화
-    
+    sched_queue * Q=NULL;
+    cpu_state * cpu =NULL;
     switch(sched_policy){
         case FCFS_SCHED:
-        //rQ 초기화
-        sched_queue * Q = init_sched(sched_policy,0);
-        cpu_state * cpu = init_cpu();
+        {//rQ 초기화
+        Q = init_sched(sched_policy,0);
+        cpu = init_cpu();
         if(_env_FCFS(Q, cpu,) < 0)
             return -1;
         printf("FCFS sucess! \n ");
         //결과에 대한 보고
         break;
-
+        }
         case ROUND_ROBIN_SCHED:
-        //rQ 초기화
+        {//rQ 초기화
         int slice ;
         scanf_s("%d", slice , sizeof(slice));
-        sched_queue * Q = init_sched(sched_policy,slice);
-        cpu_state * cpu = init_cpu();
+        Q = init_sched(sched_policy,slice);
+        cpu = init_cpu();
 
         if(_env_RR(Q, cpu) < 0)
             return -1;
         printf("RR sucess! \n ");
         //결과에 대한 보고
         break;
-
+        }
         case MLFQ_SCHED:
+        {
         //rQ 초기화
-        sched_queue * Q[] = init_bitmap();
-        cpu_state * cpu = init_cpu();
+        sched_queue ** rQ = init_bitmap();
+        cpu = init_cpu();
 
         if(_env_MLFQ(Q[], cpu) < 0)
             return -1;
         printf("MLFQ sucess! \n ");
         //결과에 대한 보고
         break;
-
+        }
         case STRIDE_SCHED:
-        //rQ 초기화
+        {//rQ 초기화
         sched_queue * Q = init_sched(sched_policy);
         cpu_state * cpu = init_cpu();
 
@@ -120,7 +122,7 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
         printf("STRDIE sucess! \n ");
         //결과에 대한 보고
         break;
-
+        }
         default:
             printf("case : No such Sched %d",currq->policy);
             exit(-1);
