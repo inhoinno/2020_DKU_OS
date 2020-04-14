@@ -25,10 +25,6 @@ struct sched_queue {};
 struct cpu_state {};
 
 // typedef io_context * poi_context;
-typedef task_strct * ptask_strct;
-typedef sched_queue * psched_queue;
-typedef psched_queue ** ppsched_queue;
-typedef cpu_state * pcpu_st;
 
 
 #define CPU_EMPTY 0 
@@ -117,6 +113,10 @@ typedef struct task_strct{
 		//or (usigned long) , (unsigned int)
 	#endif	 
 }task_strct;
+typedef task_strct * ptask_strct;
+typedef sched_queue * psched_queue;
+typedef psched_queue ** ppsched_queue;
+typedef cpu_state * pcpu_st;
 
 
 sched_queue * init_sched(int policy);
