@@ -29,6 +29,9 @@
 #include "include/lab1_sched_types.h"
 #define _SIZEOF_TEST1 5
 #define _SIZEOF_TEST2 5
+#define _RR_TIME_SLICE 2
+
+int footprint [16][100];
 
 /*
  * you need to implement FCFS, RR, SPN, SRT, HRRN, MLFQ scheduler. 
@@ -64,9 +67,10 @@ int Assert(sched_queue * Q[], cpu_state *);
     //STRIDE API
 
 //#Define Scheduling Source Code
-int Run_workload(arg1 scenario , int sched_policy){
+int Run_workload(char * scenario , int scenario_length ,int sched_policy){
     //arg1 시나리오 자료구조
     //arg2 스케쥴링 정책
+    //struct sched_queue * Q [] = init_bitmap(sched_policy);
 
     //초기화 부분, 컴퓨터를 부팅했을때 운영체제가 테이블 초기화 하는 부분이라고 생각
     //1 cpu초기화 , runQ초기화<-sched policy 이용, 비트맵(Q위치) 초기화
@@ -74,7 +78,9 @@ int Run_workload(arg1 scenario , int sched_policy){
     switch(sched_policy){
         case FCFS_SCHED:
         //rQ 초기화
-        if(_env_FCFS() < 0)
+        sched_queue * Q = init_sched(sched_policy,0);
+        cpu_state * cpu = init_cpu();
+        if(_env_FCFS(Q, cpu,) < 0)
             return -1;
         printf("FCFS sucess! \n ");
         //결과에 대한 보고
@@ -82,15 +88,23 @@ int Run_workload(arg1 scenario , int sched_policy){
 
         case ROUND_ROBIN_SCHED:
         //rQ 초기화
-        if(_env_RR() < 0)
+        int slice ;
+        scanf_s("%d", slice , sizeof(slice));
+        sched_queue * Q = init_sched(sched_policy,slice);
+        cpu_state * cpu = init_cpu();
+
+        if(_env_RR(Q, cpu) < 0)
             return -1;
         printf("RR sucess! \n ");
         //결과에 대한 보고
         break;
 
         case MLFQ_SCHED:
-       //rQ 초기화
-        if(_env_MLFQ() < 0)
+        //rQ 초기화
+        sched_queue * Q[] = init_bitmap();
+        cpu_state * cpu = init_cpu();
+
+        if(_env_MLFQ(Q[], cpu) < 0)
             return -1;
         printf("MLFQ sucess! \n ");
         //결과에 대한 보고
@@ -98,6 +112,9 @@ int Run_workload(arg1 scenario , int sched_policy){
 
         case STRIDE_SCHED:
         //rQ 초기화
+        sched_queue * Q = init_sched(sched_policy);
+        cpu_state * cpu = init_cpu();
+
         if(_env_STRIDE() < 0)
             return -1;
         printf("STRDIE sucess! \n ");
@@ -115,7 +132,7 @@ int Run_workload(arg1 scenario , int sched_policy){
 }
 int 
 _env_FCFS
-(sched_queue * rq, cpu_state * cpu_st)
+(sched_queue * rq, cpu_state * cpu_st, char * workload)
 {
     int i=0;
     int tempslice=1; 
@@ -130,28 +147,31 @@ _env_FCFS
     for(t =0; true; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
-        int arriv = time_to_fork(workload [],length ,t , step);
+        int arriv = time_to_fork(workload,length ,t , step);
         while(arriv != 0){
-            new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
-            index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
-            new_task->priority = index; // 프로세스의 우선순위 결정
-            enqueue(rq,new_task); //해당 우선순위Q에 enqueue;
+            new_task = do_fork(workload,length, step ,sched_policy); //프로세스 생성 Heap 에 생성
+            //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+            new_task->id=i++;
+            new_task->priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
+            enqueue(rq,new_task); 
             arriv--;
             new_task =NULL;
         }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
-        if(EndWorkload(rq, cpu_st)) break;
+        if(endWorkload(rq, cpu_st)) break;
 
         //3. FCFS scheduling time       
         //case : FCFS_SCHED
         //run till curr_task end
-        if (curr_task->state == TASK_DONE)
+        if (curr_task->state == TASK_DONE){
+            curr_task->fin_time =gettimeofday();
             curr_task = schdule(rq);
+        }
 
-        cpu(cpu_st , curr_task);
+        cpu(cpu_st , curr_task, t);
     }//end loop
 
-    if(assert(cpu_st, rq) <0) 
+    if(s_assert(cpu_st, rq) <0) 
         return -1;
     
     //SUCCESS FCFS
@@ -172,7 +192,6 @@ _env_RR
 
     int * step = (int *)malloc(sizeof(int));
     *step = 0;
-    sched_queue * currq= NULL;
     
     for(t =0; true; t++){        
         //흘러가는 시가안
@@ -180,9 +199,9 @@ _env_RR
 /*1*/   int arriv = time_to_fork(workload [],length ,t , step);
         while(arriv != 0){
             new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
-            index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
-            new_task->priority = index; // 프로세스의 우선순위 결정
-            Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
+            new_task->id=i++;
+            new_task->priority = 0; // 프로세스의 우선순위 결정
+            enqueue(rq,new_task); //해당 우선순위Q에 enqueue;
             arriv--;
             new_task =NULL;
         }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
@@ -194,11 +213,12 @@ _env_RR
                 enqueue(rq, prev_task); prev_task=NULL;
             }else{
                 //prev_task is done
+                
                 prev_task =NULL;
             }
         }
         
-        if(EndWorkload(rq, cpu_st)) break;
+        if(endWorkload(rq, cpu_st)) break;
         //QIsEmpty, cpu_st->cpu_state == 0
 
         // 1. 스케쥴러가 수행 되어야 한다면(time out) -> schedule, dequeue
@@ -208,14 +228,15 @@ _env_RR
 /*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)){      
             curr_task=schdule(rq); tempslice =0;}
 
-/*3.2*/ cpu(cpu_st , curr_task);                
+/*3.2*/ cpu(cpu_st , curr_task, t);                
         tempslice++;
             
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-/*3.3*/ if(cpu_st = TASK_DONE || tempslice == timeslice){
+/*3.3*/ if(cpu_st = TASK_DONE || tempslice == time_slice){
             context_save(curr_task);
-            if(curr_task->state == TASK_DONE){
-            tempslice=0;
+            prev_task = curr_task;
+            if(prev_task->state == TASK_DONE){
+                tempslice=0;
             }
         }
     
@@ -233,7 +254,7 @@ _env_MLFQ
 (sched_queue *Q [] , cpu_state * cpu_st)
 {
     int tempslice=0;
-    int time_slice=rq->time_slice;
+    int time_slice;
     
     task_strct * new_task =NULL;
     task_strct * prev_task =NULL;
@@ -241,17 +262,28 @@ _env_MLFQ
 
     int * step = (int *)malloc(sizeof(int));
     *step = 0;
-    sched_queue * currq= NULL;
+    sched_queue * rq= NULL;
     
     for(t =0; true; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
+        //새로운 태스크가 왔을 때, curr_task 가 Running중이라면 
+        // 우선순위에 의해서 new task가 수행되어야 한다
+        //이때 curr_task를 저장해주고 Queue에 넣어주자
 /*1*/   int arriv = time_to_fork(workload [],length ,t , step);
         while(arriv != 0){
             new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
-            index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
-            new_task->priority = index; // 프로세스의 우선순위 결정
+            //index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+             // 프로세스의 우선순위 결정
+            //RULE 3 when new process, locate in highest
+            new_task->sched_priority = HIGHEST_PRIORITY;
             Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
+            if(curr_task!=NULL)
+                if(curr_task->sched_priority > new_task->sched_priority){
+                    context_save(curr_task);//change ready
+                    prev_task = curr_task;
+                    curr_task =NULL;
+                }
             arriv--;
             new_task =NULL;
         }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
@@ -260,34 +292,50 @@ _env_MLFQ
 /*2*/   if(prev_task != NULL){
             if(prev_task -> state != TASK_DONE){
                 //prev_task->priority += 1;
-                Enqueue(Q, prev_task); prev_task=NULL;
-            }else{
-                //prev_task is done
+                //RULE 4 based on current time spent in rq, lower level
+                if(prev_task ->qtime >= rq->time_slice || tempslice == time_slice){//!(prev_task는 0현재 큐에서의 시간을 다 썼다)
+                    lower_priority(prev_task); prev_task->qtime=0;}
+                Enqueue(Q, prev_task); //enqueue to Q by task's priority
+                prev_task=NULL;
+            }else {
+                //prev_task is done11
                 prev_task =NULL;
             }
         }
-        
-        if(EndWorkload(rq, cpu_st)) break;
+        //RULE 5 booosting here 
+        //init bitmap because 1. prev task done 2 . boosting
+        if(EndWorkload(Q, cpu_st)) break;
         //QIsEmpty, cpu_st->cpu_state == 0
-
-        // 1. 스케쥴러가 수행 되어야 한다면(time out) -> schedule, dequeue
-        // 2. 스케쥴러가 지정한 태스크를 cpu가 수행, cpu(curr)
-        // 3. 태스크가 종료되었는지, 아니면 문맥교환 해야하는지 check 프로세스의 state변경  
 //3
-/*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)){      
-            curr_task=schdule(rq); tempslice =0;}
+/*3.1*/ //1. is Top Q empty?
+            //1. is current rq empty?
+                //yes then 
+            //2. else then
+                //schedule it (dequeue)
+        //RULE 4 based on current time spent in rq, lower level
+        if( time_to_schedule(tempslice, cpu_st, rq) || isTopQueue(Q,rq) ){ 
+            //isTopQueue는 rq와 topQ의 priority 비교, rq가 더 높으면 1(true)return     
+            rq = SelectScheduler(Q);//think about bitmap hereb
+            curr_task=schdule(rq); 
+            if(curr_task == NULL){
+                write(STDERR_FILENO, "SCHEDULE : Q is empty dequeue error\n", 45);
+                exit(-1);
+            }
+            time_slice = rq->time_slice;
+            tempslice =0;
+        }
 
-/*3.2*/ cpu_st = cpu(curr_task);                
-        tempslice++;
+/*3.2*/ cpu(curr_task,cpu_st,t);tempslice++; //cpu 에서 task->time ++ 
             
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-/*3.3*/ if(cpu_st = TASK_DONE || tempslice == timeslice){
-            context_save(curr_task);
+/*3.3*/ if(cpu_st->cpu_state = TASK_DONE || tempslice == time_slice){
+            context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
             if(curr_task->state == TASK_DONE){
-            tempslice=0;
+                tempslice=0;
             }
+            prev_task = curr_task;
+            curr_task = NULL;
         }
-    
     }
     
     if(Assert(Q,cpu_st) <0) 
@@ -298,14 +346,43 @@ _env_MLFQ
 
 }
 
-int 
-_env_STRIDE
-()
-{}
-//#Endif Scheduling Source code.
+// int 
+// _env_STRIDE
+// ()
+// {}
+// //#Endif Scheduling Source code.
 
 
+void cpu(cpu_state * state , task_strct * task, int timestamp)
+{
+    state->cpu_state = CPU_RUNNING;
+    task->state = TASK_RUNNING;
+    if(task->spent_time == 0)
+        task->res_time = gettimeofday();
+    task->spent_time +=1 ;
+    footprint[task->id][timestamp] = 1;
+    //printf("%c ", task->pid);
+    if(task->spent_time == task->total_time)
+        state->cpu_state = CPU_EMPTY;
 
+}
+
+int EndWorkload(sched_queue * Q[], cpu_state * cpu){
+    int i;
+    if (cpu->cpu_state == CPU_EMPTY){
+        for(i=0; i<3; i++) {
+            if(isEmpty(Q[i]) < 0)
+                return 0;
+        }
+        return 1;
+    }
+    else return 0;
+}
+int endWorkload(sched_queue * q, cpu_state * cpu){
+    if (cpu->cpu_state == CPU_EMPTY )
+        if(isEmpty(q)) return 1;//true
+    return 0;
+}
 //사용한 API와 초기화 함수 소스코드
 //#Define __init__ 
 int
@@ -351,12 +428,39 @@ do_fork
     printf("end_fork %d", index+1);
     return new;
 }
+sched_queue* init_sched(int policy, int slice){
+    sched_queue * q = (sched_queue *)malloc(sizeof(sched_queue));
+    q->front =NULL; q->rear =NULL;q->next_task=NULL;
+    q->policy=policy;
+    if(policy != FCFS_SCHED)
+        q->time_slice = slice;
+
+    return q;
+}
+sched_queue ** init_bitmap(){
+    sched_queue ** MLFQ = (sched_queue **)malloc(sizeof(sched_queue *) * 3);
+    int i;
+    for(i=0; i<3 ; i++){
+        MLFQ[i] = (sched_queue * )malloc(sizeof(sched_queue));
+        MLFQ[i]->my_level = i;
+        MLFQ[i]->time_slice = 2^i;
+        MLFQ[i]->front =NULL;
+        MLFQ[i]->rear = NULL;
+        MLFQ[i]->policy = ROUND_ROBIN_SCHED;
+    }
+    return MLFQ;
+}
 
 int 
 update_bitmap
-()
+(task_strct * , )
 {
     return 0;
+}
+cpu_state * init_cpu(){
+    cpu_state * cpu = (cpu_state *) malloc(sizeof(cpu_state));
+    cpu->cpu_state = CPU_EMPTY;
+    return cpu;
 }
 //#Endif __init__
 
@@ -365,21 +469,73 @@ update_bitmap
 int //return type?
 Enqueue(sched_queue * Q[], task_strct * task)
 {
+    //여기에서 priority를 수정할까?
+    //1. task의 
+    if(task->qtime < task->myrq->time_slice) //RULE 4 regardless of CPU given
+        task->qtime +=1;     
 
+    if (enqueue(Q[task->sched_priority],task) >0)
+        return 1;
+    char buf[64];
+    sprintf("error in 'enqueue' task : %c spent_time : %d\n", task->pid, task->spent_time);
+    write(STDERR_FILENO, buf, 64);
+    return -1;
 }
 int //return type?
 enqueue(sched_queue * rq , task_strct * task)
 {
+    if(isEmpty(rq)){
+        rq->front = task;
+        rq->rear = task;
+    }else{
+        task->myrq = rq;
+        task->prev = rq->rear;
+        rq->rear-> next = task;
+        rq->rear = task;
+    }
+    return 1;
 
 }
-task_strct*
-Schedule(sched_queue * Q[])
-{}
+
+// task_strct* Dequeue()
+// {
+
+// }
+
+task_strct* dequeue(sched_queue * rq)
+{
+    task_strct * ret; 
+    if(isEmpty(rq))
+        return NULL;//try catch
+    
+    if(rq->front == rq->rear){
+        ret = rq->front;
+        rq->front = NULL;
+        rq->rear = NULL;
+    }
+    else{
+        ret = rq->front;
+        ret->next = rq->front;
+        ret->next =NULL;
+        rq->front->prev = NULL;     
+    }
+    return ret;
+}
+
+// task_strct*
+// Schedule(sched_queue * Q[])
+// {
+
+// }
 
 task_strct*
 schedule(sched_queue * rq)
-{}
+{
+    task_strct * ret = dequeue(rq);
+    return ret;
+}
 
+int
 context_save(task_strct * before_task){
     int check = before_task->total_time - before_task->spent_time;
     //spent time 은 cpu()에서 증감됨. total time과 cpu time은 실제 시간이 아니고 quantum시간임
@@ -390,9 +546,29 @@ context_save(task_strct * before_task){
     }
     else{
         before_task->state = TASK_READY;
-        if(before_task->myrq->policy == MLFQ_SCHED)
-            before_task->sched_priority += 1; //Downward priority
+        //if(before_task->myrq->policy == MLFQ_SCHED)
+        //    before_task->sched_priority += 1; //Downward priority
     }
+}
+int
+isEmpty(sched_queue * rq){
+    if(rq->front != NULL)
+        return 0;
+    return 1;
+}
+
+int
+isTopQueue(sched_queue ** Q, sched_queue * rq){
+    if(rq!= NULL){
+        if(!isEmpty(Q[0]))//then top prirority queue exist
+            return (rq->my_level - Q[0]->my_level);
+        else if (!isEmpty(Q[1]))
+            return (rq->my_level - Q[1]->my_level);
+        else 
+            return 0;
+
+    }
+    return 0;
 }
 
 int s_assert
@@ -400,249 +576,254 @@ int s_assert
 {
     return 0;
 }
-int Assert(sched_queue * Q[], cpu_state *)
-{}
+int Assert(sched_queue * Q[], cpu_state * cpu)
+{
+    if(isEmpty(Q[0]) && isEmpty(Q[1] && isEmpty(Q[2]) && cpu->cpu_state == CPU_EMPTY))
+        return 1;
+    write(STDERR_FILENO, "Assert err \n", 16);
+    return -1;
+}
 //#Endif __schedAPI__
 
 
 
 
-int 
-run_workload
-(char * workload [], int length ,struct sched_queue * Q [] , int sched_policy)
-{   
-    int i=0;
-    int tempslice=1;
-    init_workload()
-    init_sched(sched_policy);       
-    // = find_top_pr(bitmap)
-    task_strct * new_task =NULL;
-    task_strct * prev_task =NULL;
-    task_strct * curr_task =NULL;
-    cpu_state * cpu_st =NULL;
-    init_cpu(cpu_st);
-    int * step = (int *)malloc(sizeof(int));
-    *step = 0;
-    sched_queue * currq= NULL;
-    //cpu task queue 자료구조 초기화
-    //switch case policy
-        //case fcfs
-            //_env_fcfs()
-        //case rr
-            //_env_rr()
-        //case mlfq
-            //_env_mlfq()
-        //case stride 
-            //_env_stride()
-    for(t =0; true; t++){        
-        //흘러가는 시가안
-        ///1: 새로운 태스크를 확인      
-        int arriv = time_to_fork(workload [],length ,t , step);
-        while(arriv != 0){
-            new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
-            index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
-            new_task->priority = index; // 프로세스의 우선순위 결정
-            Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
-            arriv--;
-            new_task =NULL;
-        }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
+// int 
+// run_workload
+// (char * workload [], int length ,struct sched_queue * Q [] , int sched_policy)
+// {   
+//     int i=0;
+//     int tempslice=1;
+//     init_workload()
+//     init_sched(sched_policy);       
+//     // = find_top_pr(bitmap)
+//     task_strct * new_task =NULL;
+//     task_strct * prev_task =NULL;
+//     task_strct * curr_task =NULL;
+//     cpu_state * cpu_st =NULL;
+//     init_cpu(cpu_st);
+//     int * step = (int *)malloc(sizeof(int));
+//     *step = 0;
+//     sched_queue * currq= NULL;
+//     //cpu task queue 자료구조 초기화
+//     //switch case policy
+//         //case fcfs
+//             //_env_fcfs()
+//         //case rr
+//             //_env_rr()
+//         //case mlfq
+//             //_env_mlfq()
+//         //case stride 
+//             //_env_stride()
+//     for(t =0; true; t++){        
+//         //흘러가는 시가안
+//         ///1: 새로운 태스크를 확인      
+//         int arriv = time_to_fork(workload [],length ,t , step);
+//         while(arriv != 0){
+//             new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
+//             index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+//             new_task->priority = index; // 프로세스의 우선순위 결정
+//             Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
+//             arriv--;
+//             new_task =NULL;
+//         }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
-        //2 : 기존의 태스크 확인
-        if(prev_task != NULL){
-            if(prev_task -> state != TASK_DONE){
-                //prev_task->priority += 1;
-                Enqueue(Q, prev_task); prev_task=NULL;
-            }else{
-                //prev_task is done
-                prev_task =NULL;
-            }
-        }
-        /*
-        if(EndWorkload(Q[], cpu_st)){//QIsEmpty, cpu_st->cpu_state == 0
-            break;
-        }*/
+//         //2 : 기존의 태스크 확인
+//         if(prev_task != NULL){
+//             if(prev_task -> state != TASK_DONE){
+//                 //prev_task->priority += 1;
+//                 Enqueue(Q, prev_task); prev_task=NULL;
+//             }else{
+//                 //prev_task is done
+//                 prev_task =NULL;
+//             }
+//         }
+//         /*
+//         if(EndWorkload(Q[], cpu_st)){//QIsEmpty, cpu_st->cpu_state == 0
+//             break;
+//         }*/
 
-        //3. scheduling time       
-        if(sched_policy != MLFQ_SCHED)
-            currq = Q[0];
-        else currq = SelectScheduler(Q[]);
-    //switch case
-    // FCFS(currq, *tempslice)
-    // RR(currq , &tempslice)
-    // MLFQ(Q[] , &tempslice)
-        //if(tempslice -1 < currq -> timeslice){
-            //time slice no over;
-        switch (currq->policy)
-        {
-            case : FCFS_SCHED
-            curr_task =  FCFS(currq, &tempslice)  //RR()//MLFQ()//schedule();
-            cpu(curr_task);
-            tempslice++;
-            break;
+//         //3. scheduling time       
+//         if(sched_policy != MLFQ_SCHED)
+//             currq = Q[0];
+//         else currq = SelectScheduler(Q[]);
+//     //switch case
+//     // FCFS(currq, *tempslice)
+//     // RR(currq , &tempslice)
+//     // MLFQ(Q[] , &tempslice)
+//         //if(tempslice -1 < currq -> timeslice){
+//             //time slice no over;
+//         switch (currq->policy)
+//         {
+//             case : FCFS_SCHED
+//             curr_task =  FCFS(currq, &tempslice)  //RR()//MLFQ()//schedule();
+//             cpu(curr_task);
+//             tempslice++;
+//             break;
 
-            case : ROUND_ROBIN_SCHED
-            // 1. 스케쥴러가 수행 되어야 한다면(time out) -> schedule, dequeue
-            // 2. 스케쥴러가 지정한 태스크를 cpu가 수행, cpu(curr)
-            // 3. 태스크가 종료되었는지, 아니면 문맥교환 해야하는지 check 프로세스의 state변경  
-            //currq = SelectRunqueue(); MLFQ
-            if(time_to_schedule(tempslice, cpu_st ,currq)){      //1
-                curr_task=schdule(currq); tempslice =0;
-            }
-            cpu_st = cpu(curr_task);         //2       
-            tempslice++;
+//             case : ROUND_ROBIN_SCHED
+//             // 1. 스케쥴러가 수행 되어야 한다면(time out) -> schedule, dequeue
+//             // 2. 스케쥴러가 지정한 태스크를 cpu가 수행, cpu(curr)
+//             // 3. 태스크가 종료되었는지, 아니면 문맥교환 해야하는지 check 프로세스의 state변경  
+//             //currq = SelectRunqueue(); MLFQ
+//             if(time_to_schedule(tempslice, cpu_st ,currq)){      //1
+//                 curr_task=schdule(currq); tempslice =0;
+//             }
+//             cpu_st = cpu(curr_task);         //2       
+//             tempslice++;
             
-            //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-            if(cpu_st = TASK_DONE || tempslice == currq->){
-                context_save(curr_task);
-                if(curr_task->state == TASK_DONE){
-                    tempslice=0;
-                }
-            }
-            // 1. time out 이라면 : timeout -> change curr task to READY(RUNNING -> READY)
-            // 2. task terminated라면 : termination -> change curr task to TERMINATE
-            // 3. 둘다 아니라면, 다시 enqueue
+//             //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
+//             if(cpu_st = TASK_DONE || tempslice == currq->){
+//                 context_save(curr_task);
+//                 if(curr_task->state == TASK_DONE){
+//                     tempslice=0;
+//                 }
+//             }
+//             // 1. time out 이라면 : timeout -> change curr task to READY(RUNNING -> READY)
+//             // 2. task terminated라면 : termination -> change curr task to TERMINATE
+//             // 3. 둘다 아니라면, 다시 enqueue
 
-            /*
-            if(curr->state == DONE)
-                terminate(curr);
-            만약 이 이후에 , slice +1 = time quantum이라면
-            curr -> state =READY 
-            if ready prev_task = curr;
-            */
-            break;
+//             /*
+//             if(curr->state == DONE)
+//                 terminate(curr);
+//             만약 이 이후에 , slice +1 = time quantum이라면
+//             curr -> state =READY 
+//             if ready prev_task = curr;
+//             */
+//             break;
             
-            /*typedef struct cpu_state{
-                task_strct *    run;
-                int             state
-            } */
-            //cpu(prev_task);
-        //}
-        //if (tempslice == rq->timesilce){
-            //time slice has over time to reschedule
-         //   prev_task = Dequeue(rq);
-          //  context_store(prev_task);
-        //}
-            default : 
-                printf("case : No such Sched %d",currq->policy);
-                exit(-1);
-                break;//will not execute 
-        }
+//             /*typedef struct cpu_state{
+//                 task_strct *    run;
+//                 int             state
+//             } */
+//             //cpu(prev_task);
+//         //}
+//         //if (tempslice == rq->timesilce){
+//             //time slice has over time to reschedule
+//          //   prev_task = Dequeue(rq);
+//           //  context_store(prev_task);
+//         //}
+//             default : 
+//                 printf("case : No such Sched %d",currq->policy);
+//                 exit(-1);
+//                 break;//will not execute 
+//         }
         
 
-    }
-    /*
-    //Initialize workload & process & scheduler
-    loop till scenario done// i is time
-    {
-        //1. 새로 생성된 task에 대해 비트맵수정, 그리고 enQueue작업
-        if(time_for_fork(scenario))
-        {
-            task_strct new_process= fork_process() with sched policy
-            //비트맵에 해당하는 우선순위 -> 우선순위 Queue에 삽입
-            index = change_bitmap()
-            //Q[index].Enqueue( task_strct, new_process)
-        }
-        //1.1 기존의 task enque
+//     }
+//     /*
+//     //Initialize workload & process & scheduler
+//     loop till scenario done// i is time
+//     {
+//         //1. 새로 생성된 task에 대해 비트맵수정, 그리고 enQueue작업
+//         if(time_for_fork(scenario))
+//         {
+//             task_strct new_process= fork_process() with sched policy
+//             //비트맵에 해당하는 우선순위 -> 우선순위 Queue에 삽입
+//             index = change_bitmap()
+//             //Q[index].Enqueue( task_strct, new_process)
+//         }
+//         //1.1 기존의 task enque
 
-        //2. 스케줄링 하는 시점 timeslice = 8이면? MLFQ면? 
-        //1. find top-proirity rq //(bitmap)
-        //2. based on bitmap & sched_policy, 
-        if( timeslice = Q.timeslice){
-            schedule
-            //check task enqueue priority
-        }
+//         //2. 스케줄링 하는 시점 timeslice = 8이면? MLFQ면? 
+//         //1. find top-proirity rq //(bitmap)
+//         //2. based on bitmap & sched_policy, 
+//         if( timeslice = Q.timeslice){
+//             schedule
+//             //check task enqueue priority
+//         }
 
-    }end loop
-    */
+//     }end loop
+//     */
 
-}
+// }
 
-int 
-run_workload
-(char * workload [], int length ,struct sched_queue * Q [] , int sched_policy)
-{   
-    int i=0;
-    int tempslice=1;
-    init_workload()
-    init_sched(sched_policy);       
-    // = find_top_pr(bitmap)
-    task_strct * new_task =NULL;
-    task_strct * prev_task =NULL;
-    task_strct * curr_task =NULL;
-    cpu_state * cpu_st =NULL;
-    init_cpu(cpu_st);
-    int * step = (int *)malloc(sizeof(int));
-    *step = 0;
-    sched_queue * currq= NULL;
-    //cpu task queue 자료구조 초기화
-    //switch case policy
-        //case fcfs
-            //_env_fcfs()
-        //case rr
-            //_env_rr()
-        //case mlfq
-            //_env_mlfq()
-        //case stride 
-            //_env_stride()
-}
-void MLFQ
-(sched_queue * Q [] ,int * currtime)
-{}
-task_strct * FCFS
-(sched_queue * rq, int * currtime)
-{
-    int temptime = *currtime;
-    task_strct * curr =  Peek(rq);
-        //then process DONE
-    if(curr->total_time == temptime){
-        curr = Dequeue(rq); temptime =0;
-    }
-    *currtime = temptime;
-    return curr;
-}
+// int 
+// run_workload
+// (char * workload [], int length ,struct sched_queue * Q [] , int sched_policy)
+// {   
+//     int i=0;
+//     int tempslice=1;
+//     init_workload()
+//     init_sched(sched_policy);       
+//     // = find_top_pr(bitmap)
+//     task_strct * new_task =NULL;
+//     task_strct * prev_task =NULL;
+//     task_strct * curr_task =NULL;
+//     cpu_state * cpu_st =NULL;
+//     init_cpu(cpu_st);
+//     int * step = (int *)malloc(sizeof(int));
+//     *step = 0;
+//     sched_queue * currq= NULL;
+//     //cpu task queue 자료구조 초기화
+//     //switch case policy
+//         //case fcfs
+//             //_env_fcfs()
+//         //case rr
+//             //_env_rr()
+//         //case mlfq
+//             //_env_mlfq()
+//         //case stride 
+//             //_env_stride()
+// }
+// void MLFQ
+// (sched_queue * Q [] ,int * currtime)
+// {}
+// task_strct * FCFS
+// (sched_queue * rq, int * currtime)
+// {
+//     int temptime = *currtime;
+//     task_strct * curr =  Peek(rq);
+//         //then process DONE
+//     if(curr->total_time == temptime){
+//         curr = Dequeue(rq); temptime =0;
+//     }
+//     *currtime = temptime;
+//     return curr;
+// }
 
-/*
-
-
-
-    for(;;){
-        if(deque?)
-            break
-    }
+// /*
 
 
 
-*/
+//     for(;;){
+//         if(deque?)
+//             break
+//     }
 
-/*
-return NEXT TASK time_out argument SCHED_QUEUE
-    Now end of time slice of task 
-    //FCFS
-    if process's time has left??
-    //RR
-    prev_task = dequeue from Q
-    if(is Q empty?)
-        then if prev_task's time has left?
-            then execute prev_task
-        else 
-            then Q is empty,Workload done
-            no task to sched. WAIT for further workload 
-            SAVE CONTEXT , prev
-            return Nothing
-        endif
-    else if then Workload left TODO
-        check any process that should be sched(like new task)
-        if there are new process
-            then enqueue that process
-        else no new process
-        endif
-        if there are some time to execute prev_task
-            then enqueue prev_task to this sched? or lower_level_q
-        else then prev_task->state = DONE
-    endif
 
-    return this->front
-*/
+
+// */
+
+// /*
+// return NEXT TASK time_out argument SCHED_QUEUE
+//     Now end of time slice of task 
+//     //FCFS
+//     if process's time has left??
+//     //RR
+//     prev_task = dequeue from Q
+//     if(is Q empty?)
+//         then if prev_task's time has left?
+//             then execute prev_task
+//         else 
+//             then Q is empty,Workload done
+//             no task to sched. WAIT for further workload 
+//             SAVE CONTEXT , prev
+//             return Nothing
+//         endif
+//     else if then Workload left TODO
+//         check any process that should be sched(like new task)
+//         if there are new process
+//             then enqueue that process
+//         else no new process
+//         endif
+//         if there are some time to execute prev_task
+//             then enqueue prev_task to this sched? or lower_level_q
+//         else then prev_task->state = DONE
+//     endif
+
+//     return this->front
+// */
 
 
 

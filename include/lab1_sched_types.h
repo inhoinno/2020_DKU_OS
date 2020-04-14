@@ -19,18 +19,20 @@
 #define MLFQ_SCHED 3
 #define STRIDE_SCHED 4 
 
-struct io_context;
+// struct io_context;
 struct task_strct;
 struct sched_queue;
 struct cpu_state;
 
-typedef io_context * poi_context;
+// typedef io_context * poi_context;
 typedef task_strct * ptask_strct;
 typedef sched_queue * psched_queue;
 typedef psched_queue ** ppsched_queue;
 typedef cpu_state * pcpu_st;
 
 
+#define CPU_EMPTY 0 
+#define CPU_RUNNING 1
 typedef struct cpu_state{
 	int cpu_state;
 	//int cpu_no; for cache affinity , then should check cpu# to scheduling
@@ -40,10 +42,10 @@ typedef struct cpu_state{
 	//...
 }cpu_state;
 
-typedef struct io_context{
-	char			*str;
-	//io작업은 IO수행중이라는 메세지를 띄움
-}io_context;
+// typedef struct io_context{
+// 	char			*str;
+// 	//io작업은 IO수행중이라는 메세지를 띄움
+// }io_context;
 typedef struct sched_queue{
 	//What if FCFS?
 		// normal queue, task_struct *next; 
@@ -58,6 +60,7 @@ typedef struct sched_queue{
 	task_strct		*rear;
 	task_strct		*next_task; //<- Where? queue? task?
 	#ifdef MLFQ_SCHED
+		#define HIGHEST_PRIORITY 0
 		int				my_level;
 	#endif
 
@@ -67,6 +70,7 @@ typedef struct sched_queue{
 #define TASK_READY 2
 typedef struct task_strct{
 	char 			pid;// A B C D and E
+	int 			id;
 	int  			state;
 	int 			sched_policy;
     //task_strct      *next_sched; //<- Where? queue? task?should it be here? 
@@ -90,6 +94,8 @@ typedef struct task_strct{
 	int				qtime; 
 	//how much time this task spent in Present Queue(MLFQ)
 	
+	task_strct *	next; //latter
+	task_strct * 	prev; //former
 	//ttime //Time the task terminate
 	io_context 		*IO; 
     sched_queue		*myrq;
@@ -113,10 +119,12 @@ typedef struct task_strct{
 }task_strct;
 
 
-int init_sched();
+sched_queue * init_sched(int policy);
+sched_queue * init_bitmap();
+cpu_state* init_cpu();
+
 int init_task_strct();
 int init_workload();
-int init_cpu();
 int init_io(char * str);
 int Working(task_strct * );
 int Spin(int );

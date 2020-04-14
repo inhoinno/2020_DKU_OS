@@ -34,3 +34,84 @@
                 task_strct *    run;
                 int             state
             } */
+
+
+int 
+_env_MLFQ
+(sched_queue *Q [] , cpu_state * cpu_st, char * workload [] )
+{
+    int tempslice=0;
+    int time_slice;
+    
+    task_strct * new_task =NULL;
+    task_strct * prev_task =NULL;
+    task_strct * curr_task =NULL;
+
+    int * step = (int *)malloc(sizeof(int));
+    *step = 0;
+    sched_queue * rq= NULL;
+    
+    for(t =0; true; t++){        
+        //흘러가는 시가안
+        ///1: 새로운 태스크를 확인      
+/*1*/   int arriv = time_to_fork(workload [],length ,t , step);
+        while(arriv != 0){
+            new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
+            index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+            new_task->priority = index; // 프로세스의 우선순위 결정
+            Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
+            arriv--;
+            new_task =NULL;
+        }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
+
+        //2 : 기존의 태스크 확인
+/*2*/   if(prev_task != NULL){
+            if(prev_task -> state != TASK_DONE){
+                //prev_task->priority += 1;
+                if()//!(prev_task는 현재 큐에서의 시간을 다 썼다)
+                    lower_priority(prev_task);
+                Enqueue(Q, prev_task); //enqueue to Q by task's priority
+                prev_task=NULL;
+            }else{
+                //prev_task is done
+                prev_task =NULL;
+            }
+        }
+        
+        if(EndWorkload(Q, cpu_st)) break;
+        //QIsEmpty, cpu_st->cpu_state == 0
+//3
+/*3.1*/ //1. is Top Q empty?
+            //1. is current rq empty?
+                //yes then 
+            //2. else then
+                //schedule it (dequeue)
+    
+        if( time_to_schedule(tempslice, cpu_st, rq) || rq->my_level != TopQueue(bitmap) ){      
+            rq = SelectScheduler(Q);//think about bitmap hereb
+            curr_task=schdule(rq); 
+            time_slice = rq->time_slice;
+            tempslice =0;
+        }
+
+/*3.2*/ cpu(curr_task,cpu_st);                
+        tempslice++;
+            
+        //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
+/*3.3*/ if(cpu_st->cpu_state = TASK_DONE || tempslice == time_slice){
+            context_save(curr_task);
+            if(curr_task->state == TASK_DONE){
+                tempslice=0;
+            }
+        }
+
+    
+    }
+    
+    if(Assert(Q,cpu_st) <0) 
+        return -1;
+    
+    //SUCCESS RR
+    return 1; 
+
+}
