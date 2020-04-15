@@ -184,6 +184,7 @@ _env_FCFS
         ///1: 새로운 태스크를 확인      
         do{
             task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
+            joblist = joblist->next_item;
             if(new_task == NULL)
                 break;
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
@@ -544,6 +545,7 @@ _Module_fork(tasklist * joblist, int t)
         //task_strct * new_task = _Module_fork(tsklist ,t)
     task_strct * ret =NULL;
     printf("joblist %p joblist->current->pid %c\n",joblist, joblist->current->pid);
+    printf("joblist->next_item %p\n", joblist->next_item);
     if((joblist->arriv_T - t) == 0){
         ret=joblist->current;
         joblist=joblist->next_item;
