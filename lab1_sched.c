@@ -34,8 +34,8 @@ int footprint [16][100];
 void footprint_f(){
     int i;
     int j;
-    for(i=1; footprint[i][0] != 0; i++){
-        for(j=1; j<50; j++)
+    for(i=0; i<5; i++){
+        for(j=0; j<50; j++)
             if(footprint[i][j] == 1)
                 printf("■");            
             else 
@@ -185,9 +185,10 @@ _env_FCFS
         ///1: 새로운 태스크를 확인      
         do{
             task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
-            joblist = joblist->next_item;
             if(new_task == NULL)
                 break;
+            else joblist = joblist->next_item;
+
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->id=i++;
             ///new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
@@ -404,12 +405,13 @@ void cpu(cpu_state * state , task_strct * task, int timestamp)
     state->cpu_state = CPU_RUNNING;
     task->state = TASK_RUNNING;
     if(task->spent_time == 0)
-        task->res_time = timestamp;
+        task->res_time = timestamp;    
+    if(task->spent_time == task->total_time)
+        state->cpu_state = CPU_EMPTY;
     task->spent_time +=1 ;
     footprint[task->id][timestamp] = 1;
     printf("%c ", task->pid);
-    if(task->spent_time == task->total_time)
-        state->cpu_state = CPU_EMPTY;
+
 
 }
 
@@ -551,10 +553,8 @@ _Module_fork(tasklist * joblist, int t)
     //printf("joblist->next_item %p\n", joblist->next_item);
     if(joblist == NULL)
         return ret;
-    if((joblist->arriv_T - t) == 0){
+    if((joblist->arriv_T - t) == 0)
         ret=joblist->current;
-        //joblist=joblist->next_item;
-    }
     return ret;
 }
 //end
