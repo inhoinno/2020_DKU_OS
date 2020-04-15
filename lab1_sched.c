@@ -657,7 +657,7 @@ task_strct* dequeue(sched_queue * rq)
     }
     else{
         ret = rq->front;
-        ret->next = rq->front;
+        rq->front = ret->next;
         ret->next =NULL;
         (rq->front)->prev = NULL;     
     }
