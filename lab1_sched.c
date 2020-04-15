@@ -196,7 +196,7 @@ _env_FCFS
             new_task =NULL;
         }while(1);// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
-        if(endWorkload(rq, cpu_st)) break;
+        if(endWorkload(rq, cpu_st,joblist)) break;
 
         //3. FCFS scheduling time       
         //case : FCFS_SCHED
@@ -207,10 +207,15 @@ _env_FCFS
             curr_task->fin_time =t;
             curr_task =(task_strct *)schedule(rq);
         }
-
-        cpu(cpu_st , curr_task, t);
-        if(curr_task->spent_time == curr_task->total_time)
-            curr_task->state = TASK_DONE;
+        if(curr_task !=NULL){
+            cpu(cpu_st , curr_task, t);
+            if(curr_task->spent_time == curr_task->total_time){
+                curr_task->state = TASK_DONE;
+                cpu_st->cpu_state =CPU_EMPTY;
+            }
+        }
+        //else//time 만 소비...
+        
     }//end loop
 
     if(s_assert(cpu_st, rq) <0) 
@@ -428,9 +433,10 @@ int EndWorkload(sched_queue * Q[], cpu_state * cpu){
     }
     else return 0;
 }
-int endWorkload(sched_queue * q, cpu_state * cpu){
+int endWorkload(sched_queue * q, cpu_state * cpu, tasklist*joblist){
     if (cpu->cpu_state == CPU_EMPTY )
-        if(isEmpty(q)) return 1;//true
+        if (joblist ==NULL)
+            if(isEmpty(q)) return 1;//true
     return 0;
 }
 //사용한 API와 초기화 함수 소스코드
