@@ -545,6 +545,7 @@ _Module_fork(tasklist * joblist, int t)
     task_strct * ret =NULL;
     if((joblist->arriv_T - t) == 0)
         ret=joblist->current;
+    joblist=joblist->next_item;
     return ret;
 }
 //end
