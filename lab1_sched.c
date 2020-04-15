@@ -114,7 +114,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         cpu = init_cpu();
         if(_env_FCFS(Q, cpu, HeadList->head) < 0)
             return -1;
-        printf("FCFS sucess! \n ");
+        printf("FCFS sucess!\n");
         //결과에 대한 보고
         break;
         }
