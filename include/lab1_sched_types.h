@@ -167,7 +167,7 @@ int EndWorkload
 (sched_queue * Q[], cpu_state * cpu);
 
 int endWorkload
-(sched_queue * q, cpu_state * cpu);
+(sched_queue * q, cpu_state * cpu , tasklist * joblist);
 
 int time_to_fork
 (char ** workload , int length, int time , int* index);
