@@ -549,6 +549,8 @@ _Module_fork(tasklist * joblist, int t)
     task_strct * ret =NULL;
     //printf("joblist %p joblist->current->pid %c\n",joblist, joblist->current->pid);
     //printf("joblist->next_item %p\n", joblist->next_item);
+    if(joblist == NULL)
+        return ret;
     if((joblist->arriv_T - t) == 0){
         ret=joblist->current;
         //joblist=joblist->next_item;
