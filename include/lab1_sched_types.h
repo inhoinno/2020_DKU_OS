@@ -144,7 +144,7 @@ int init_workload(char ** scenario, task_strct * ret);
  * You need to Declare functions in  here
  */
 int Run_workload
-(char * scenario[] , int scenario_length ,int sched_policy);
+(const char * scenario[] , int scenario_length ,int sched_policy);
 
 int _env_FCFS
 (sched_queue * rq, cpu_state * cpu_st, tasklist * joblist);

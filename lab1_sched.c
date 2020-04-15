@@ -82,7 +82,7 @@ int Assert(sched_queue * Q[], cpu_state *);
 // int init_workload(char * scenario[] , task_strct * ret){
     
 // }
-int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
+int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy){
     //arg1 시나리오 자료구조
     //arg2 스케쥴링 정책
     //struct sched_queue * Q [] = init_bitmap(sched_policy);
