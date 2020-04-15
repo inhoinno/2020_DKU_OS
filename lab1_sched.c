@@ -487,12 +487,17 @@ init_tasklist
 {
     //초기화 하고 왔다고 가정하고 
     int i;
-    tasklist * item = (tasklist * )malloc(sizeof(tasklist));
-    task_strct * task = (task_strct *)malloc(sizeof(task_strct));
-    item->arriv_T=0;
-    item->current =NULL;
-    item->next_item=NULL;
+   
+    
+    
     for(i=0; i<wlength; i++){
+        tasklist * item = (tasklist * )malloc(sizeof(tasklist)+1);
+        item->arriv_T=0;
+        item->current =NULL;
+        item->next_item=NULL;
+        //tasklist
+
+        task_strct * task = (task_strct *)malloc(sizeof(task_strct)+1);
         do_fork(scenario[i],task);
         //task 생성
         item->current = task;
@@ -508,8 +513,8 @@ int do_fork(char * str, task_strct * t)
 {
     if(str != NULL){
         t->pid = str[0];
-        t->arr_time = str[2];
-        t->total_time = str[4];
+        t->arr_time = atoi(&str[2]);
+        t->total_time = atoi(&str[4]);
         return 1;
     }
     else return -1;
