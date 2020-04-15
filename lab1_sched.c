@@ -10,7 +10,7 @@
 *
 */
 
-#include <aio.h>
+//#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -24,15 +24,27 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-#include <asm/unistd.h>
+//#include <asm/unistd.h>
 
 #include "include/lab1_sched_types.h"
-#define _SIZEOF_TEST1 5
-#define _SIZEOF_TEST2 5
+
 #define _RR_TIME_SLICE 2
 
 int footprint [16][100];
+void footprint_f(){
+    int i;
+    int j;
+    for(i=1; footprint[i][0] != 0; i++){
+        for(j=1; j<50; j++)
+            if(footprint[i][j] == 1)
+                printf("■");            
+            else 
+                printf("□");
+        printf("\n");
+    }
 
+            
+}
 /*
  * you need to implement FCFS, RR, SPN, SRT, HRRN, MLFQ scheduler. 
  * 
@@ -67,6 +79,9 @@ int Assert(sched_queue * Q[], cpu_state *);
     //STRIDE API
 
 //#Define Scheduling Source Code
+int init_workload(char * scenario[] , task_strct * ret){
+    
+}
 int Run_workload(char * scenario , int scenario_length ,int sched_policy){
     //arg1 시나리오 자료구조
     //arg2 스케쥴링 정책
@@ -81,7 +96,7 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
         {//rQ 초기화
         Q = init_sched(sched_policy,0);
         cpu = init_cpu();
-        if(_env_FCFS(Q, cpu,) < 0)
+        if(_env_FCFS(Q, cpu, scenario, scenario_length) < 0)
             return -1;
         printf("FCFS sucess! \n ");
         //결과에 대한 보고
@@ -89,12 +104,12 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
         }
         case ROUND_ROBIN_SCHED:
         {//rQ 초기화
-        int slice ;
-        scanf_s("%d", slice , sizeof(slice));
+        int slice =2; //#define timeslice
+        //scanf_s("%d", slice , sizeof(slice));
         Q = init_sched(sched_policy,slice);
         cpu = init_cpu();
 
-        if(_env_RR(Q, cpu) < 0)
+        if(_env_RR(Q, cpu, scenario, scenario_length) < 0)
             return -1;
         printf("RR sucess! \n ");
         //결과에 대한 보고
@@ -106,25 +121,25 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
         sched_queue ** rQ = init_bitmap();
         cpu = init_cpu();
 
-        if(_env_MLFQ(Q[], cpu) < 0)
+        if(_env_MLFQ(rQ, cpu, scenario, scenario_length) < 0)
             return -1;
         printf("MLFQ sucess! \n ");
         //결과에 대한 보고
         break;
         }
-        case STRIDE_SCHED:
-        {//rQ 초기화
-        sched_queue * Q = init_sched(sched_policy);
-        cpu_state * cpu = init_cpu();
+        // case STRIDE_SCHED:
+        // {//rQ 초기화
+        // sched_queue * Q = init_sched(sched_policy,4);
+        // cpu_state * cpu = init_cpu();
 
-        if(_env_STRIDE() < 0)
-            return -1;
-        printf("STRDIE sucess! \n ");
-        //결과에 대한 보고
-        break;
-        }
+        // if(_env_STRIDE() < 0)
+        //     return -1;
+        // printf("STRDIE sucess! \n ");
+        // //결과에 대한 보고
+        // break;
+        //}
         default:
-            printf("case : No such Sched %d",currq->policy);
+            printf("case : No such Sched %d",sched_policy);
             exit(-1);
             break;//will not execute 
     }
@@ -134,9 +149,10 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
 }
 int 
 _env_FCFS
-(sched_queue * rq, cpu_state * cpu_st, char * workload)
+(sched_queue * rq, cpu_state * cpu_st, char * workload[], int length)
 {
-    int i=0;
+    int i=1;
+    int t=0;
     int tempslice=1; 
 
     task_strct * new_task =NULL;
@@ -146,15 +162,15 @@ _env_FCFS
     int * step = (int *)malloc(sizeof(int));
     *step = 0;
    
-    for(t =0; true; t++){        
+    for(t =0; 1; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
-        int arriv = time_to_fork(workload,length ,t , step);
+        int arriv = time_to_fork(&workload[0],5, t, step);
         while(arriv != 0){
-            new_task = do_fork(workload,length, step ,sched_policy); //프로세스 생성 Heap 에 생성
+            new_task = do_fork(&workload[0] , step); //프로세스 생성 Heap 에 생성
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->id=i++;
-            new_task->priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
+            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
             enqueue(rq,new_task); 
             arriv--;
             new_task =NULL;
@@ -166,8 +182,8 @@ _env_FCFS
         //case : FCFS_SCHED
         //run till curr_task end
         if (curr_task->state == TASK_DONE){
-            curr_task->fin_time =gettimeofday();
-            curr_task = schdule(rq);
+            curr_task->fin_time =t;
+            curr_task =(task_strct *)schedule(rq);
         }
 
         cpu(cpu_st , curr_task, t);
@@ -182,9 +198,10 @@ _env_FCFS
 
 int 
 _env_RR
-(sched_queue * rq, cpu_state * cpu_st)
+(sched_queue * rq, cpu_state * cpu_st,char * workload[], int length)
 {
     int i=0;
+    int t=0;
     int tempslice=0;
     int time_slice=rq->time_slice;
     
@@ -195,14 +212,14 @@ _env_RR
     int * step = (int *)malloc(sizeof(int));
     *step = 0;
     
-    for(t =0; true; t++){        
+    for(t =0; 1; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
-/*1*/   int arriv = time_to_fork(workload [],length ,t , step);
+/*1*/   int arriv = time_to_fork(&workload[0],length ,t , step);
         while(arriv != 0){
-            new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
+            new_task = do_fork(&workload[0], step ); //프로세스 생성 Heap 에 생성
             new_task->id=i++;
-            new_task->priority = 0; // 프로세스의 우선순위 결정
+            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
             enqueue(rq,new_task); //해당 우선순위Q에 enqueue;
             arriv--;
             new_task =NULL;
@@ -227,17 +244,18 @@ _env_RR
         // 2. 스케쥴러가 지정한 태스크를 cpu가 수행, cpu(curr)
         // 3. 태스크가 종료되었는지, 아니면 문맥교환 해야하는지 check 프로세스의 state변경  
 //3
-/*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)){      
-            curr_task=schdule(rq); tempslice =0;}
+/*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)>0){      
+            curr_task =schedule(rq); tempslice =0;}
 
 /*3.2*/ cpu(cpu_st , curr_task, t);                
         tempslice++;
             
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-/*3.3*/ if(cpu_st = TASK_DONE || tempslice == time_slice){
+/*3.3*/ if((cpu_st->cpu_state= TASK_DONE) || (tempslice == time_slice)){
             context_save(curr_task);
             prev_task = curr_task;
             if(prev_task->state == TASK_DONE){
+                prev_task->fin_time = t;
                 tempslice=0;
             }
         }
@@ -253,11 +271,11 @@ _env_RR
 
 int 
 _env_MLFQ
-(sched_queue *Q [] , cpu_state * cpu_st)
+(sched_queue *Q [] , cpu_state * cpu_st, char * workload[], int length)
 {
     int tempslice=0;
     int time_slice;
-    
+    int t;
     task_strct * new_task =NULL;
     task_strct * prev_task =NULL;
     task_strct * curr_task =NULL;
@@ -266,15 +284,15 @@ _env_MLFQ
     *step = 0;
     sched_queue * rq= NULL;
     
-    for(t =0; true; t++){        
+    for(t =0; 1; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
         //새로운 태스크가 왔을 때, curr_task 가 Running중이라면 
         // 우선순위에 의해서 new task가 수행되어야 한다
         //이때 curr_task를 저장해주고 Queue에 넣어주자
-/*1*/   int arriv = time_to_fork(workload [],length ,t , step);
+/*1*/   int arriv = time_to_fork(workload,length ,t , step);
         while(arriv != 0){
-            new_task = do_fork(workload[] , length, step ,sched_policy); //프로세스 생성 Heap 에 생성
+            new_task = do_fork(workload, step); //프로세스 생성 Heap 에 생성
             //index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
              // 프로세스의 우선순위 결정
             //RULE 3 when new process, locate in highest
@@ -317,8 +335,8 @@ _env_MLFQ
         //RULE 4 based on current time spent in rq, lower level
         if( time_to_schedule(tempslice, cpu_st, rq) || isTopQueue(Q,rq) ){ 
             //isTopQueue는 rq와 topQ의 priority 비교, rq가 더 높으면 1(true)return     
-            rq = SelectScheduler(Q);//think about bitmap hereb
-            curr_task=schdule(rq); 
+            rq = (sched_queue *)SelectScheduler(Q);//think about bitmap hereb
+            curr_task=schedule(rq); 
             if(curr_task == NULL){
                 write(STDERR_FILENO, "SCHEDULE : Q is empty dequeue error\n", 45);
                 exit(-1);
@@ -327,12 +345,13 @@ _env_MLFQ
             tempslice =0;
         }
 
-/*3.2*/ cpu(curr_task,cpu_st,t);tempslice++; //cpu 에서 task->time ++ 
+/*3.2*/ cpu(cpu_st, curr_task,t);tempslice++; //cpu 에서 task->time ++ 
             
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
 /*3.3*/ if(cpu_st->cpu_state = TASK_DONE || tempslice == time_slice){
             context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
             if(curr_task->state == TASK_DONE){
+                curr_task->fin_time=t;
                 tempslice=0;
             }
             prev_task = curr_task;
@@ -360,7 +379,7 @@ void cpu(cpu_state * state , task_strct * task, int timestamp)
     state->cpu_state = CPU_RUNNING;
     task->state = TASK_RUNNING;
     if(task->spent_time == 0)
-        task->res_time = gettimeofday();
+        task->res_time = timestamp;
     task->spent_time +=1 ;
     footprint[task->id][timestamp] = 1;
     //printf("%c ", task->pid);
@@ -387,6 +406,21 @@ int endWorkload(sched_queue * q, cpu_state * cpu){
 }
 //사용한 API와 초기화 함수 소스코드
 //#Define __init__ 
+void lower_priority(task_strct * _task){
+    if(_task->sched_priority < LOWEST_PRIORITY) 
+        _task->sched_priority +=1;
+    else 
+        return;
+}
+int
+time_to_schedule(int currslice, cpu_state* cpu , sched_queue * rq){
+    if( currslice >= rq->time_slice)
+        return 1;
+    else if(cpu->cpu_state == CPU_EMPTY)
+        return 1;
+    else //curr slice <= timeslice, cpu != empty..
+        return 0;
+}
 int
 time_to_fork(char * workload [], int length, int time , int* index)
 {   
@@ -396,7 +430,7 @@ time_to_fork(char * workload [], int length, int time , int* index)
     int i;//=*index 성능 향상 대신  코드 꼬일수 있음
     int c=0;
     for(i=0; i<length; i++){
-        if (time == atoi(workload[i][3])){ c++; *index = i;}
+        if (time == atoi(&workload[i][3])){ c++; *index = i;}
     }
     if (c!= 0) *index = *index - c -1;
     return c;
@@ -407,7 +441,7 @@ time_to_fork(char * workload [], int length, int time , int* index)
 }
 task_strct * 
 do_fork
-(char * workload[] , int length, int * step ,int sched_policy)
+(char * workload[], int * step)
 {   
     int index = *step; 
     printf("do fork() %d", index);
@@ -420,9 +454,9 @@ do_fork
     char id = workload[index][0];
     new->pid = id;
     new->state= TASK_READY ;
-    new->sched_policy = sched_policy;
-    new->total_time = atoi( workload[index][6]);    //vulnerable
-    new->atime =  atoi(workload[index][3]);         //vulnerable
+    //new->sched_policy = sched_policy;
+    new->total_time = atoi(&workload[index][6]);    //vulnerable
+    new->arr_time =  atoi(&workload[index][3]);         //vulnerable
     //new->ticket
     //new->stride
     *step = index+1;
@@ -453,12 +487,12 @@ sched_queue ** init_bitmap(){
     return MLFQ;
 }
 
-int 
-update_bitmap
-(task_strct * , )
-{
-    return 0;
-}
+// int 
+// update_bitmap
+// (task_strct * , )
+// {
+//     return 0;
+// }
 cpu_state * init_cpu(){
     cpu_state * cpu = (cpu_state *) malloc(sizeof(cpu_state));
     cpu->cpu_state = CPU_EMPTY;
@@ -468,6 +502,15 @@ cpu_state * init_cpu(){
 
 //#Define __schedAPI__
 //1. Queue & Scheduler
+sched_queue *
+SelectScheduler(sched_queue * Q[]){
+    if( isEmpty(Q[0]) == 0 )
+        return Q[0];
+    else if ( isEmpty(Q[1]) ==0 ) 
+        return Q[1];
+    else 
+        return Q[3];
+}
 int //return type?
 Enqueue(sched_queue * Q[], task_strct * task)
 {
@@ -479,7 +522,7 @@ Enqueue(sched_queue * Q[], task_strct * task)
     if (enqueue(Q[task->sched_priority],task) >0)
         return 1;
     char buf[64];
-    sprintf("error in 'enqueue' task : %c spent_time : %d\n", task->pid, task->spent_time);
+    sprintf(buf,"error in 'enqueue' task : %c spent_time : %d\n", task->pid, task->spent_time);
     write(STDERR_FILENO, buf, 64);
     return -1;
 }
@@ -492,9 +535,10 @@ enqueue(sched_queue * rq , task_strct * task)
     }else{
         task->myrq = rq;
         task->prev = rq->rear;
-        rq->rear-> next = task;
+        (rq->rear)->next = task;
         rq->rear = task;
     }
+    task->sched_policy = rq->policy;
     return 1;
 
 }
@@ -519,7 +563,7 @@ task_strct* dequeue(sched_queue * rq)
         ret = rq->front;
         ret->next = rq->front;
         ret->next =NULL;
-        rq->front->prev = NULL;     
+        (rq->front)->prev = NULL;     
     }
     return ret;
 }
@@ -529,11 +573,11 @@ task_strct* dequeue(sched_queue * rq)
 // {
 
 // }
-
-task_strct*
+void print_footprint(){}
+task_strct *
 schedule(sched_queue * rq)
 {
-    task_strct * ret = dequeue(rq);
+    task_strct * ret = (task_strct *)dequeue(rq);
     return ret;
 }
 
@@ -544,7 +588,7 @@ context_save(task_strct * before_task){
     //따라서 연산시 정수가 나옴.(0 =TASKDONE)
     if(check == 0){
         before_task->state = TASK_DONE;
-        before_task->fin_time = gettimeofday();
+        //before_task->fin_time = gettimeofday();
     }
     else{
         before_task->state = TASK_READY;
@@ -554,7 +598,7 @@ context_save(task_strct * before_task){
 }
 int
 isEmpty(sched_queue * rq){
-    if(rq->front != NULL)
+    if(rq->front != (sched_queue *)NULL)
         return 0;
     return 1;
 }
@@ -580,7 +624,7 @@ int s_assert
 }
 int Assert(sched_queue * Q[], cpu_state * cpu)
 {
-    if(isEmpty(Q[0]) && isEmpty(Q[1] && isEmpty(Q[2]) && cpu->cpu_state == CPU_EMPTY))
+    if(isEmpty(Q[0]) && isEmpty(Q[1]) && isEmpty(Q[2]) && (cpu->cpu_state == CPU_EMPTY))
         return 1;
     write(STDERR_FILENO, "Assert err \n", 16);
     return -1;

@@ -9,8 +9,7 @@
 *       - Must contains scueduler algorithm test code.
 *
 */
-
-#include <aio.h>
+//#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -23,10 +22,11 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-#include <asm/unistd.h>
+//#include <asm/unistd.h>
 
 #include "lab1_sched_types.h"
-
+#define _SIZEOF_TEST1 5
+#define _SIZEOF_TEST2 5
 /*
  * you need to implement scheduler simlator test code.
  *
@@ -48,7 +48,7 @@ int test1(int sched_policy)
         "E, 8, 2",};
     int scenario_length = _SIZEOF_TEST1; 
     //이게 안되면 struct로 토큰 따서 주면 됨
-    if (Run_workload(task_scenario [], scenario_length ,  sched_policy)<0)
+    if (Run_workload(task_scenario, scenario_length ,  sched_policy)<0)
         return -1;
     return 1;    
 }
@@ -62,7 +62,7 @@ int test2(int sched_policy)
         "E, 8, 2",};
     int scenario_length = _SIZEOF_TEST2; 
     //이게 안되면 struct로 토큰 따서 주면 됨
-    if (Run_workload(task_scenario [], scenario_length , sched_policy)<0)
+    if (Run_workload(task_scenario, scenario_length , sched_policy)<0)
         return -1;
     return 1;    
 }
@@ -88,10 +88,10 @@ E       2       8           E   4   4
     int policy=0;
     int test=0;
     policy= FCFS_SCHED;
-    test(policy);
-    
+    test1(policy);
+
     policy = ROUND_ROBIN_SCHED;
-    test(policy);
+    test1(policy);
 
 
     

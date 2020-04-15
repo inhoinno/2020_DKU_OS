@@ -1,4 +1,6 @@
-
+TODO
+workload
+length
 
 int Run_workload(char * scenario , int scenario_length ,int sched_policy);
 int _env_FCFS

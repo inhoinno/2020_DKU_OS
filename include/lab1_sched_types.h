@@ -13,23 +13,27 @@
 #ifndef _LAB1_HEADER_H
 #define _LAB1_HEADER_H
 //Header & funcs & structs
- 
+
 #define FCFS_SCHED 1
 #define ROUND_ROBIN_SCHED 2
 #define MLFQ_SCHED 3
 #define STRIDE_SCHED 4 
+typedef struct Task_strct task_strct;
+typedef struct Sched_queue sched_queue;
+typedef struct Cpu_state cpu_state;
 
-// struct io_context;
-struct task_strct {};
-struct sched_queue {};
-struct cpu_state {};
+typedef task_strct * ptask_strct;
+typedef sched_queue * psched_queue;
+typedef psched_queue ** ppsched_queue;
+typedef cpu_state * pcpu_st;
+
 
 // typedef io_context * poi_context;
 
 
 #define CPU_EMPTY 0 
 #define CPU_RUNNING 1
-typedef struct cpu_state{
+typedef struct Cpu_state{
 	int cpu_state;
 	//int cpu_no; for cache affinity , then should check cpu# to scheduling
 	//u64 cpu_running; 얼마나 cpu가 수행되었는지에 대해
@@ -42,7 +46,7 @@ typedef struct cpu_state{
 // 	char			*str;
 // 	//io작업은 IO수행중이라는 메세지를 띄움
 // }io_context;
-typedef struct sched_queue{
+typedef struct Sched_queue{
 	//What if FCFS?
 		// normal queue, task_struct *next; 
 	//What if RR?
@@ -57,14 +61,17 @@ typedef struct sched_queue{
 	task_strct		*next_task; //<- Where? queue? task?
 	#ifdef MLFQ_SCHED
 		#define HIGHEST_PRIORITY 0
+		#define LOWEST_PRIORITY 2
 		int				my_level;
 	#endif
 
 }sched_queue;
+
 #define TASK_DONE 0
 #define TASK_RUNNING 1
 #define TASK_READY 2
-typedef struct task_strct{
+
+typedef struct Task_strct{
 	char 			pid;// A B C D and E
 	int 			id;
 	int  			state;
@@ -93,7 +100,7 @@ typedef struct task_strct{
 	task_strct *	next; //latter
 	task_strct * 	prev; //former
 	//ttime //Time the task terminate
-	io_context 		*IO; 
+	//io_context 		*IO; 
     sched_queue		*myrq;
 	int				sched_priority;
 	// some struct for I/OOperation
@@ -113,24 +120,12 @@ typedef struct task_strct{
 		//or (usigned long) , (unsigned int)
 	#endif	 
 }task_strct;
-typedef task_strct * ptask_strct;
-typedef sched_queue * psched_queue;
-typedef psched_queue ** ppsched_queue;
-typedef cpu_state * pcpu_st;
 
 
-sched_queue * init_sched(int policy);
-sched_queue * init_bitmap();
+sched_queue * init_sched(int policy, int t);
+sched_queue ** init_bitmap();
 cpu_state* init_cpu();
-
-int init_task_strct();
-int init_workload();
-int init_io(char * str);
-int Working(task_strct * );
-int Spin(int );
-
-
-
+int init_workload(char ** scenario, task_strct * ret);
 /*
  * You need to Declare functions in  here
  */
@@ -138,16 +133,21 @@ int Run_workload
 (char * scenario , int scenario_length ,int sched_policy);
 
 int _env_FCFS
-(sched_queue * rq, cpu_state * cpu_st, char * workload);
+(sched_queue * rq, cpu_state * cpu_st, char ** workload, int length);
 
 int _env_RR
-(sched_queue * rq, cpu_state * cpu_st);
+(sched_queue * rq, cpu_state * cpu_st, char ** workload, int length);
 
 int _env_MLFQ
-(sched_queue *Q [] , cpu_state * cpu_st);
+(sched_queue *Q [] , cpu_state * cpu_st, char ** workload, int length);
  
 void cpu
-(cpu_state * state , task_strct * task, int timestamp);
+(cpu_state * cpu , task_strct * task,int timestamp);
+
+void lower_priority(task_strct * _task);
+
+int time_to_schedule
+(int currslice, cpu_state* cpu , sched_queue * rq);
 
 int EndWorkload
 (sched_queue * Q[], cpu_state * cpu);
@@ -156,14 +156,13 @@ int endWorkload
 (sched_queue * q, cpu_state * cpu);
 
 int time_to_fork
-(char * workload [], int length, int time , int* index);
+(char ** workload , int length, int time , int* index);
 
 task_strct *
 do_fork
-(char * workload[] , int length, int * step ,int sched_policy);
+(char ** workload , int * step);
 
-sched_queue* 
-init_sched
+sched_queue* init_sched
 (int policy, int slice);
 
 sched_queue ** 
@@ -171,6 +170,9 @@ init_bitmap();
 
 cpu_state * 
 init_cpu();
+
+sched_queue *
+SelectScheduler(sched_queue ** Q);
 
 int //return type?
 Enqueue(sched_queue * Q[], task_strct * task);
