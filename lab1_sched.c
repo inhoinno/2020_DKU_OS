@@ -503,7 +503,7 @@ time_to_fork(char * workload [], int length, int time , int* index)
 //start
 int
 init_tasklist
-(List * return_list, char * scenario[], int wlength)
+(List * return_list,const char * scenario[], int wlength)
 {
     //초기화 하고 왔다고 가정하고 
     int i;    

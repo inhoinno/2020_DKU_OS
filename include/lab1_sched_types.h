@@ -178,7 +178,7 @@ int time_to_fork
 //start 
 int
 init_tasklist
-(List * return_list, char * scenario[], int wlength);
+(List * return_list, const char * scenario[], int wlength);
 
 int 
 do_fork(char * str, task_strct * t);
