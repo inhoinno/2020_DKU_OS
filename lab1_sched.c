@@ -34,7 +34,7 @@ int footprint [16][100];
 void footprint_f(){
     int i;
     int j;
-    for(i=0; i<6; i++){
+    for(i=1; i<6; i++){
         for(j=0; j<50; j++)
             if(footprint[i][j] == 1)
                 printf("■");            
