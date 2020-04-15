@@ -159,6 +159,7 @@ int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
             exit(-1);
             break;//will not execute 
     }
+    footprint_f();
     //free(all)
     printf("Workload Complete Successly . \n");
     return 1; //SUCESS
@@ -184,7 +185,7 @@ _env_FCFS
         ///1: 새로운 태스크를 확인      
         do{
             task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
-            joblist = joblist->next_item;
+            //joblist = joblist->next_item;
             if(new_task == NULL)
                 break;
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
@@ -406,7 +407,7 @@ void cpu(cpu_state * state , task_strct * task, int timestamp)
         task->res_time = timestamp;
     task->spent_time +=1 ;
     footprint[task->id][timestamp] = 1;
-    //printf("%c ", task->pid);
+    printf("%c ", task->pid);
     if(task->spent_time == task->total_time)
         state->cpu_state = CPU_EMPTY;
 
@@ -546,8 +547,8 @@ _Module_fork(tasklist * joblist, int t)
         //in _env(tsklist)
         //task_strct * new_task = _Module_fork(tsklist ,t)
     task_strct * ret =NULL;
-    printf("joblist %p joblist->current->pid %c\n",joblist, joblist->current->pid);
-    printf("joblist->next_item %p\n", joblist->next_item);
+    //printf("joblist %p joblist->current->pid %c\n",joblist, joblist->current->pid);
+    //printf("joblist->next_item %p\n", joblist->next_item);
     if((joblist->arriv_T - t) == 0){
         ret=joblist->current;
         joblist=joblist->next_item;
@@ -664,7 +665,6 @@ task_strct* dequeue(sched_queue * rq)
 // {
 
 // }
-void print_footprint(){}
 task_strct *
 schedule(sched_queue * rq)
 {
