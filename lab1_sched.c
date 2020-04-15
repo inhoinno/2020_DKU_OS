@@ -502,6 +502,7 @@ init_tasklist
         //task 생성
         item->current = task;
         item->arriv_T = task->arr_time;
+        
         addList(return_list, item);
         item =item->next_item;
     }
