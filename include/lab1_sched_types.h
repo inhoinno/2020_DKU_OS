@@ -181,7 +181,7 @@ init_tasklist
 (List * return_list, const char * scenario[], int wlength);
 
 int 
-do_fork(char * str, task_strct * t);
+do_fork(const char * str, task_strct * t);
 
 int 
 addList( List * L, tasklist * tl);

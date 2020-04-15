@@ -527,7 +527,7 @@ init_tasklist
 
 
 }
-int do_fork(char * str, task_strct * t)
+int do_fork(const char * str, task_strct * t)
 {
     if(str != NULL){
         t->pid = str[0];
@@ -700,7 +700,7 @@ context_save(task_strct * before_task){
 }
 int
 isEmpty(sched_queue * rq){
-    if(rq->front != (sched_queue *)NULL)
+    if(rq->front != NULL)
         return 0;
     return 1;
 }
