@@ -102,7 +102,7 @@ int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
     tasklist * tskl = HeadList->head;
     for(i=0; tskl !=NULL &&i< 5; i++)
     {
-        printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T);        
+        printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
         tskl = tskl->next_item;
     }
 
