@@ -543,9 +543,11 @@ _Module_fork(tasklist * joblist, int t)
         //in _env(tsklist)
         //task_strct * new_task = _Module_fork(tsklist ,t)
     task_strct * ret =NULL;
-    if((joblist->arriv_T - t) == 0)
+    printf("joblist %p joblist->current->pid %c\n",joblist, joblist->current->pid);
+    if((joblist->arriv_T - t) == 0){
         ret=joblist->current;
-    joblist=joblist->next_item;
+        joblist=joblist->next_item;
+    }
     return ret;
 }
 //end
