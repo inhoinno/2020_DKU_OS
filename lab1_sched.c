@@ -199,7 +199,9 @@ _env_FCFS
         //3. FCFS scheduling time       
         //case : FCFS_SCHED
         //run till curr_task end
-        if (curr_task->state == TASK_DONE){
+        if(curr_task ==NULL)    
+            curr_task =(task_strct *)schedule(rq);
+        else if (curr_task->state == TASK_DONE){
             curr_task->fin_time =t;
             curr_task =(task_strct *)schedule(rq);
         }
