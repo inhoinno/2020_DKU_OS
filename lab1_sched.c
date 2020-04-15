@@ -209,6 +209,8 @@ _env_FCFS
         }
 
         cpu(cpu_st , curr_task, t);
+        if(curr_task->spent_time == curr_task->total_time)
+            curr_task->state = TASK_DONE;
     }//end loop
 
     if(s_assert(cpu_st, rq) <0) 
