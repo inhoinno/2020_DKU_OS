@@ -66,9 +66,16 @@ addList( List * L, tasklist * tl){
 
 }
 task_strct *
-_Module_fork())
-{
-
+_Module_fork(tasklist * joblist, int t)
+{   
+    //in Run_workload
+    //_env ( ... ,HeadList ->head, ...)
+        //in _env(tsklist)
+        //task_strct * new_task = _Module_fork(tsklist ,t)
+    task_strct * ret =NULL;
+    if((joblist->arriv_T - t) == 0)
+        ret=joblist->current;
+    return ret;
 }
 
 

@@ -106,13 +106,13 @@ int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
         tskl = tskl->next_item;
     }
 
-    /*
+    
     switch(sched_policy){
         case FCFS_SCHED:
         {//rQ 초기화
         Q = init_sched(sched_policy,0);
         cpu = init_cpu();
-        if(_env_FCFS(Q, cpu, scenario, scenario_length) < 0)
+        if(_env_FCFS(Q, cpu, HeadList->head) < 0)
             return -1;
         printf("FCFS sucess! \n ");
         //결과에 대한 보고
@@ -125,7 +125,7 @@ int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
         Q = init_sched(sched_policy,slice);
         cpu = init_cpu();
 
-        if(_env_RR(Q, cpu, scenario, scenario_length) < 0)
+        if(_env_RR(Q, cpu, HeadList->head) < 0)
             return -1;
         printf("RR sucess! \n ");
         //결과에 대한 보고
@@ -137,7 +137,7 @@ int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
         sched_queue ** rQ = init_bitmap();
         cpu = init_cpu();
 
-        if(_env_MLFQ(rQ, cpu, scenario, scenario_length) < 0)
+        if(_env_MLFQ(rQ, cpu, HeadList->head) < 0)
             return -1;
         printf("MLFQ sucess! \n ");
         //결과에 대한 보고
@@ -159,19 +159,20 @@ int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
             exit(-1);
             break;//will not execute 
     }
+    //free(all)
     printf("Workload Complete Successly . \n");
-    */return 1; //SUCESS
+    return 1; //SUCESS
 
 }
 int 
 _env_FCFS
-(sched_queue * rq, cpu_state * cpu_st, char * workload[], int length)
+(sched_queue * rq, cpu_state * cpu_st, tasklist* joblist)
 {
     int i=1;
     int t=0;
     int tempslice=1; 
 
-    task_strct * new_task =NULL;
+    
     //task_strct * prev_task =NULL;
     task_strct * curr_task =NULL;
 
@@ -181,16 +182,16 @@ _env_FCFS
     for(t =0; 1; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
-        int arriv = time_to_fork(&workload[0],5, t, step);
-        while(arriv != 0){
-            new_task = do_fork(&workload[0] , step); //프로세스 생성 Heap 에 생성
+        do{
+            task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
+            if(new_task == NULL)
+                break;
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->id=i++;
-            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
+            ///new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
             enqueue(rq,new_task); 
-            arriv--;
             new_task =NULL;
-        }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
+        }while(1);// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
         if(endWorkload(rq, cpu_st)) break;
 
@@ -214,7 +215,7 @@ _env_FCFS
 
 int 
 _env_RR
-(sched_queue * rq, cpu_state * cpu_st,char * workload[], int length)
+(sched_queue * rq, cpu_state * cpu_st, tasklist* joblist)
 {
     int i=0;
     int t=0;
@@ -231,15 +232,17 @@ _env_RR
     for(t =0; 1; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
-/*1*/   int arriv = time_to_fork(&workload[0],length ,t , step);
-        while(arriv != 0){
-            new_task = do_fork(&workload[0], step ); //프로세스 생성 Heap 에 생성
+/*1*/   do{
+            task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
+            if(new_task == NULL){
+                free(new_task);
+                break;}
+            //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->id=i++;
-            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
-            enqueue(rq,new_task); //해당 우선순위Q에 enqueue;
-            arriv--;
+            ///new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
+            enqueue(rq,new_task); 
             new_task =NULL;
-        }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
+        }while(1);// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
         //2 : 기존의 태스크 확인
 /*2*/   if(prev_task != NULL){
@@ -287,12 +290,13 @@ _env_RR
 
 int 
 _env_MLFQ
-(sched_queue *Q [] , cpu_state * cpu_st, char * workload[], int length)
+(sched_queue *Q [] , cpu_state * cpu_st, tasklist * joblist)
 {
     int tempslice=0;
     int time_slice;
     int t;
-    task_strct * new_task =NULL;
+    int i=1;
+    
     task_strct * prev_task =NULL;
     task_strct * curr_task =NULL;
 
@@ -306,13 +310,14 @@ _env_MLFQ
         //새로운 태스크가 왔을 때, curr_task 가 Running중이라면 
         // 우선순위에 의해서 new task가 수행되어야 한다
         //이때 curr_task를 저장해주고 Queue에 넣어주자
-/*1*/   int arriv = time_to_fork(workload,length ,t , step);
-        while(arriv != 0){
-            new_task = do_fork(workload, step); //프로세스 생성 Heap 에 생성
-            //index = update_bitmap(new_task, Q[]); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
-             // 프로세스의 우선순위 결정
-            //RULE 3 when new process, locate in highest
-            new_task->sched_priority = HIGHEST_PRIORITY;
+/*1*/   
+        do{
+            task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
+            if(new_task == NULL)
+                break;
+            //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+            new_task->id=i++;
+            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
             Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
             if(curr_task!=NULL)
                 if(curr_task->sched_priority > new_task->sched_priority){
@@ -320,9 +325,9 @@ _env_MLFQ
                     prev_task = curr_task;
                     curr_task =NULL;
                 }
-            arriv--;
             new_task =NULL;
-        }// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
+        }while(1);
+        // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
         //2 : 기존의 태스크 확인
 /*2*/   if(prev_task != NULL){
@@ -486,10 +491,7 @@ init_tasklist
 (List * return_list, char * scenario[], int wlength)
 {
     //초기화 하고 왔다고 가정하고 
-    int i;
-   
-    
-    
+    int i;    
     for(i=0; i<wlength; i++){
         tasklist * item = (tasklist * )malloc(sizeof(tasklist)+1);
         item->arriv_T=0;
@@ -533,6 +535,18 @@ addList(List * L, tasklist * tl){
     return 1;
 
 }
+task_strct *
+_Module_fork(tasklist * joblist, int t)
+{   
+    //in Run_workload
+    //_env ( ... ,HeadList ->head, ...)
+        //in _env(tsklist)
+        //task_strct * new_task = _Module_fork(tsklist ,t)
+    task_strct * ret =NULL;
+    if((joblist->arriv_T - t) == 0)
+        ret=joblist->current;
+    return ret;
+}
 //end
 sched_queue* init_sched(int policy, int slice){
     sched_queue * q = (sched_queue *)malloc(sizeof(sched_queue));
@@ -544,7 +558,7 @@ sched_queue* init_sched(int policy, int slice){
     return q;
 }
 sched_queue ** init_bitmap(){
-    sched_queue ** MLFQ = (sched_queue **)malloc(sizeof(sched_queue *) * 3);
+    sched_queue ** MLFQ = (sched_queue **)malloc(sizeof(sched_queue *) * 3 +1);
     int i;
     for(i=0; i<3 ; i++){
         MLFQ[i] = (sched_queue * )malloc(sizeof(sched_queue));

@@ -147,13 +147,13 @@ int Run_workload
 (char * scenario[] , int scenario_length ,int sched_policy);
 
 int _env_FCFS
-(sched_queue * rq, cpu_state * cpu_st, char ** workload, int length);
+(sched_queue * rq, cpu_state * cpu_st, tasklist * joblist);
 
 int _env_RR
-(sched_queue * rq, cpu_state * cpu_st, char ** workload, int length);
+(sched_queue * rq, cpu_state * cpu_st, tasklist * joblist);
 
 int _env_MLFQ
-(sched_queue *Q [] , cpu_state * cpu_st, char ** workload, int length);
+(sched_queue *Q [] , cpu_state * cpu_st, tasklist * joblist);
  
 void cpu
 (cpu_state * cpu , task_strct * task,int timestamp);
@@ -185,6 +185,9 @@ do_fork(char * str, task_strct * t);
 
 int 
 addList( List * L, tasklist * tl);
+
+task_strct *
+_Module_fork(tasklist * joblist, int t);
 //end
 sched_queue* init_sched
 (int policy, int slice);
