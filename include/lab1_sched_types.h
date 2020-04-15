@@ -164,7 +164,7 @@ int time_to_schedule
 (int currslice, cpu_state* cpu , sched_queue * rq);
 
 int EndWorkload
-(sched_queue * Q[], cpu_state * cpu);
+(sched_queue * Q[], cpu_state * cpu, tasklist*joblist);
 
 int endWorkload
 (sched_queue * q, cpu_state * cpu , tasklist * joblist);

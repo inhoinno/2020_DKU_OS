@@ -268,7 +268,7 @@ _env_RR
             }
         }
         
-        if(endWorkload(rq, cpu_st)) break;
+        if(endWorkload(rq, cpu_st,joblist)) break;
         //QIsEmpty, cpu_st->cpu_state == 0
 
         // 1. 스케쥴러가 수행 되어야 한다면(time out) -> schedule, dequeue
@@ -357,7 +357,7 @@ _env_MLFQ
         }
         //RULE 5 booosting here 
         //init bitmap because 1. prev task done 2 . boosting
-        if(EndWorkload(Q, cpu_st)) break;
+        if(EndWorkload(Q, cpu_st, joblist)) break;
         //QIsEmpty, cpu_st->cpu_state == 0
 //3
 /*3.1*/ //1. is Top Q empty?
@@ -422,13 +422,14 @@ void cpu(cpu_state * state , task_strct * task, int timestamp)
 
 }
 
-int EndWorkload(sched_queue * Q[], cpu_state * cpu){
+int EndWorkload(sched_queue * Q[], cpu_state * cpu, tasklist * joblist){
     int i;
     if (cpu->cpu_state == CPU_EMPTY){
-        for(i=0; i<3; i++) {
-            if(isEmpty(Q[i]) < 0)
-                return 0;
-        }
+        if(joblist ==NULL)    
+            for(i=0; i<3; i++) {
+                if(isEmpty(Q[i]) < 0)
+                    return 0;
+            }
         return 1;
     }
     else return 0;
