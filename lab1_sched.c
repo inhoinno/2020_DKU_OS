@@ -79,18 +79,34 @@ int Assert(sched_queue * Q[], cpu_state *);
     //STRIDE API
 
 //#Define Scheduling Source Code
-int init_workload(char * scenario[] , task_strct * ret){
+// int init_workload(char * scenario[] , task_strct * ret){
     
-}
-int Run_workload(char * scenario , int scenario_length ,int sched_policy){
+// }
+int Run_workload(char * scenario[] , int scenario_length ,int sched_policy){
     //arg1 시나리오 자료구조
     //arg2 스케쥴링 정책
     //struct sched_queue * Q [] = init_bitmap(sched_policy);
 
     //초기화 부분, 컴퓨터를 부팅했을때 운영체제가 테이블 초기화 하는 부분이라고 생각
     //1 cpu초기화 , runQ초기화<-sched policy 이용, 비트맵(Q위치) 초기화
-    sched_queue * Q=NULL;
-    cpu_state * cpu =NULL;
+    
+    sched_queue * Q= malloc(sizeof(sched_queue)); 
+    cpu_state * cpu =malloc(sizeof(cpu_state));
+    List * HeadList =malloc(sizeof(List));
+    HeadList ->head =NULL;
+    HeadList->last =NULL;
+
+    if(init_tasklist(HeadList , scenario, scenario_length)<0 )
+        exit(-111);
+    int i;
+    tasklist * tskl = HeadList->head;
+    for(i=0; tskl !=NULL &&i< 5; i++)
+    {
+        printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T);        
+        tskl = tskl->next_item;
+    }
+
+    /*
     switch(sched_policy){
         case FCFS_SCHED:
         {//rQ 초기화
@@ -144,7 +160,7 @@ int Run_workload(char * scenario , int scenario_length ,int sched_policy){
             break;//will not execute 
     }
     printf("Workload Complete Successly . \n");
-    return 1; //SUCESS
+    */return 1; //SUCESS
 
 }
 int 
@@ -439,31 +455,79 @@ time_to_fork(char * workload [], int length, int time , int* index)
     // 같은시간 없으면 c:0 index =0;
 
 }
-task_strct * 
-do_fork
-(char * workload[], int * step)
-{   
-    int index = *step; 
-    printf("do fork() %d", index);
+// task_strct * 
+// do_fork
+// (char * workload[], int * step)
+// {   
+//     int index = *step; 
+//     printf("do fork() %d", index);
 
-    task_strct * new = (task_strct *)malloc(sizeof(task_strct)); //메모리가 부족한경우 
-    if(new ==NULL){ 
-        write(STDERR_FILENO, "ERROR in malloc, process exit with state -1", 45);
-        exit(-1);
+//     task_strct * new = (task_strct *)malloc(sizeof(task_strct)); //메모리가 부족한경우 
+//     if(new ==NULL){ 
+//         write(STDERR_FILENO, "ERROR in malloc, process exit with state -1", 45);
+//         exit(-1);
+//     }
+//     char id = workload[index][0];
+//     new->pid = id;
+//     new->state= TASK_READY ;
+//     //new->sched_policy = sched_policy;
+//     new->total_time = atoi(&workload[index][6]);    //vulnerable
+//     new->arr_time =  atoi(&workload[index][3]);         //vulnerable
+//     //new->ticket
+//     //new->stride
+//     *step = index+1;
+//     //step은 다음 workload[][]라는 자료구조의 fork할 프로세스("str로 표현된")의 인덱스[step][]를 나타낸다
+//     printf("end_fork %d", index+1);
+//     return new;
+// }
+//start
+int
+init_tasklist
+(List * return_list, char * scenario[], int wlength)
+{
+    //초기화 하고 왔다고 가정하고 
+    int i;
+    tasklist * item = (tasklist * )malloc(sizeof(tasklist));
+    task_strct * task = (task_strct *)malloc(sizeof(task_strct));
+    item->arriv_T=0;
+    item->current =NULL;
+    item->next_item=NULL;
+    for(i=0; i<wlength; i++){
+        do_fork(scenario[i],task);
+        //task 생성
+        item->current = task;
+        item->arriv_T = task->arr_time;
+        addList(return_list, item);
+        item =item->next_item;
     }
-    char id = workload[index][0];
-    new->pid = id;
-    new->state= TASK_READY ;
-    //new->sched_policy = sched_policy;
-    new->total_time = atoi(&workload[index][6]);    //vulnerable
-    new->arr_time =  atoi(&workload[index][3]);         //vulnerable
-    //new->ticket
-    //new->stride
-    *step = index+1;
-    //step은 다음 workload[][]라는 자료구조의 fork할 프로세스("str로 표현된")의 인덱스[step][]를 나타낸다
-    printf("end_fork %d", index+1);
-    return new;
+    return 0;
+
+
 }
+int do_fork(char * str, task_strct * t)
+{
+    if(str != NULL){
+        t->pid = str[0];
+        t->arr_time = str[2];
+        t->total_time = str[4];
+        return 1;
+    }
+    else return -1;
+}
+int 
+addList(List * L, tasklist * tl){
+    if(L->head == NULL){
+        L->head = tl;
+        L->last = tl;
+    }
+    else{
+        L->last->next_item =tl;
+        L->last= tl; 
+    }
+    return 1;
+
+}
+//end
 sched_queue* init_sched(int policy, int slice){
     sched_queue * q = (sched_queue *)malloc(sizeof(sched_queue));
     q->front =NULL; q->rear =NULL;q->next_task=NULL;

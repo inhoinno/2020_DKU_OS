@@ -21,12 +21,15 @@
 typedef struct Task_strct task_strct;
 typedef struct Sched_queue sched_queue;
 typedef struct Cpu_state cpu_state;
+typedef struct Tasklist tasklist;
+typedef struct List List;
 
+typedef struct List * pList;
 typedef task_strct * ptask_strct;
 typedef sched_queue * psched_queue;
 typedef psched_queue ** ppsched_queue;
 typedef cpu_state * pcpu_st;
-
+typedef tasklist * ptasklist;
 
 // typedef io_context * poi_context;
 
@@ -67,6 +70,17 @@ typedef struct Sched_queue{
 
 }sched_queue;
 
+typedef struct List{
+    tasklist * head;
+    tasklist * last;
+}List;
+
+typedef struct Tasklist{
+    int arriv_T;//arr time for current pointing task
+    task_strct * current;
+    tasklist * next_item;
+
+}tasklist;
 #define TASK_DONE 0
 #define TASK_RUNNING 1
 #define TASK_READY 2
@@ -130,7 +144,7 @@ int init_workload(char ** scenario, task_strct * ret);
  * You need to Declare functions in  here
  */
 int Run_workload
-(char * scenario , int scenario_length ,int sched_policy);
+(char * scenario[] , int scenario_length ,int sched_policy);
 
 int _env_FCFS
 (sched_queue * rq, cpu_state * cpu_st, char ** workload, int length);
@@ -158,10 +172,20 @@ int endWorkload
 int time_to_fork
 (char ** workload , int length, int time , int* index);
 
-task_strct *
-do_fork
-(char ** workload , int * step);
+// task_strct *
+// do_fork
+// (char ** workload , int * step);
+//start 
+int
+init_tasklist
+(List * return_list, char * scenario[], int wlength);
 
+int 
+do_fork(char * str, task_strct * t);
+
+int 
+addList( List * L, tasklist * tl);
+//end
 sched_queue* init_sched
 (int policy, int slice);
 

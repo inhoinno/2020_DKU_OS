@@ -27,6 +27,9 @@
 #include "lab1_sched_types.h"
 #define _SIZEOF_TEST1 5
 #define _SIZEOF_TEST2 5
+
+
+
 /*
  * you need to implement scheduler simlator test code.
  *
@@ -40,29 +43,30 @@ void help(){
 }
 int test1(int sched_policy)
 {
-    char * task_scenario[] = 
-    {   "A, 0, 3",
-        "B, 2, 6",
-        "C, 4, 5",
-        "D, 6, 4",
-        "E, 8, 2",};
+    const char * task_scenario1[] = 
+    { // 0 2 45 (6)
+        "A 0 3",
+        "B 2 6",
+        "C 4 5",
+        "D 6 4",
+        "E 8 2",};
     int scenario_length = _SIZEOF_TEST1; 
     //이게 안되면 struct로 토큰 따서 주면 됨
-    if (Run_workload(task_scenario, scenario_length ,  sched_policy)<0)
+    if (Run_workload(task_scenario1, scenario_length ,  sched_policy)<0)
         return -1;
     return 1;    
 }
 int test2(int sched_policy)
 {
-    char * task_scenario[] = 
-    {   "A, 0, 3",
-        "B, 2, 6",
-        "C, 4, 5",
-        "D, 6, 4",
-        "E, 8, 2",};
+    const char * task_scenario2[] = 
+    {   "A 0 3",
+        "B 0 6",
+        "C 4 5",
+        "D 5 4",
+        "E 8 2",};
     int scenario_length = _SIZEOF_TEST2; 
     //이게 안되면 struct로 토큰 따서 주면 됨
-    if (Run_workload(task_scenario, scenario_length , sched_policy)<0)
+    if (Run_workload(task_scenario2, scenario_length , sched_policy)<0)
         return -1;
     return 1;    
 }
@@ -79,9 +83,9 @@ E       2       8           E   4   4
 */
     // ./out FCFS test2
     // ./out RR test1
-    if (strcmp(argv[1],"-help") != 0)
-    {  help(); exit(0);}
-    // if (argc !=3)
+    // if (strcmp(argv[1],"-help") != 0)
+    // {  help(); exit(0);}
+    // // if (argc !=3)
     // { write(FILENO_STDERR,"WRONG USAGE! usage should -> ./%s sched_type test1( or test2)\n Dont know how to use, type ./%s -help\n",argv[0],argv[0]);  exit(0); }
     //./arg0 arg1 arg2
     //       rr    test1
@@ -90,8 +94,8 @@ E       2       8           E   4   4
     policy= FCFS_SCHED;
     test1(policy);
 
-    policy = ROUND_ROBIN_SCHED;
-    test1(policy);
+    // policy = ROUND_ROBIN_SCHED;
+    // test1(policy);
 
 
     

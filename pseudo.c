@@ -1,3 +1,77 @@
+"A      0   3"
+ ^pid   ^a  ^run
+"B 2 6"
+"A 0 3"
+-> pid A
+-> arrtime 0
+-> total time 3
+typedef struct Tasklist tasklist;
+typedef struct List List;
+typedef tasklist * ptasklist;
+typedef struct List * pList;
+
+typedef struct List{
+    tasklist * head;
+    tasklist * last;
+}List;
+
+typedef struct Tasklist{
+    int arriv_T;//arr time for current pointing task
+    task_strct * current;
+    tasklist * next_item;
+
+}tasklist;
+
+int
+init_tasklist
+(List * return_list, char * scenario[], int wlength)
+{
+    //초기화 하고 왔다고 가정하고 
+    int i;
+    tasklist * item = (tasklist * )malloc(sizeof(tasklist));
+    task_strct * task = (task_strct)malloc(sizeof(task_strct));
+    
+    for(i=0; i<wlength; i++){
+        do_fork(scenario[i],task);
+        //task 생성
+        item -> current = task;
+        item->arriv_T = task->arr_time;
+        addList(return_list, item);
+        item =item->next_item;
+    }
+    return 0;
+
+
+}
+int do_fork(char * str, task_strct * t){
+    if(str != NULL){
+        t->pid = str[0];
+        t->arr_time = str[2];
+        t->total_time = str[4];
+        return 1;
+    }
+    else return -1;
+}
+int 
+addList( List * L, tasklist * tl){
+    if(L->head == NULL){
+        L->head = tl;
+        L->last = tl;
+    }
+    else{
+        L->last->next_item =tl;
+        L->last= tl; 
+    }
+    return 1;
+
+}
+task_strct *
+_Module_fork())
+{
+
+}
+
+
 TODO
 workload
 length
