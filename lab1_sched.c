@@ -35,7 +35,7 @@ int footprint [_MAX_PROCESS_LIMIT][_MAX_WORKLOAD_TIME];
 void footprint_f(){
     int i;
     int j;
-    for(i=0; i<6; i++){
+    for(i=1; i<6; i++){
         for(j=0; j<_MAX_WORKLOAD_TIME; j++)
             if(j!=0)
                 if(footprint[i][j] == 1){
