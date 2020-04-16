@@ -112,9 +112,11 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         {//rQ 초기화
         Q = init_sched(sched_policy,0);
         cpu = init_cpu();
+        printf("  ");
+
         if(_env_FCFS(Q, cpu, HeadList->head) < 0)
             return -1;
-        printf("FCFS sucess!\n");
+        printf(" FCFS sucess!\n");
         //결과에 대한 보고
         break;
         }
@@ -123,11 +125,11 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         int slice =1; //#define timeslice
         //scanf_s("%d", slice , sizeof(slice));
         Q = init_sched(sched_policy,slice);
-        cpu = init_cpu();
+        cpu = init_cpu();printf("  ");
 
         if(_env_RR(Q, cpu, HeadList->head) < 0)
             return -1;
-        printf("RR sucess! \n");
+        printf(" RR sucess! \n");
 
         //결과에 대한 보고
         break;
@@ -139,7 +141,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         cpu = init_cpu();
         if(_env_MLFQ(rQ, cpu, HeadList->head) < 0)
             return -1;
-        printf("MLFQ sucess! \n");
+        printf(" MLFQ sucess! \n");
 
         //결과에 대한 보고
         break;
@@ -553,7 +555,7 @@ void cpu
         context_save(task);
     }
     footprint[task->id][timestamp+1] = 1;
-    printf("%c ", task->pid); 
+    printf("%c", task->pid); 
 }
 
 int EndWorkload(sched_queue * Q[], cpu_state * cpu, tasklist * joblist){
