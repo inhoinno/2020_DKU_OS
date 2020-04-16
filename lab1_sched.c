@@ -277,7 +277,7 @@ _env_RR
 //3
 /*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)>0){      
             curr_task =schedule(rq); tempslice =0;}
-
+        
 /*3.2*/ cpu(cpu_st , curr_task, t);                
         tempslice++;
             
@@ -286,6 +286,7 @@ _env_RR
             context_save(curr_task);
             prev_task = curr_task;
             if(prev_task->state == TASK_DONE){
+                cpu_st->cpu_state =CPU_EMPTY;
                 prev_task->fin_time = t;
                 tempslice=0;
             }
