@@ -9,7 +9,7 @@
 *       - Must contains scueduler algorithm test code.
 *
 */
-//#include <aio.h>
+#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-//#include <asm/unistd.h>
+#include <asm/unistd.h>
 
 #include "lab1_sched_types.h"
 #define _SIZEOF_TEST1 5

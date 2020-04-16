@@ -10,7 +10,7 @@
 *
 */
 
-//#include <aio.h>
+#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-//#include <asm/unistd.h>
+#include <asm/unistd.h>
 
 #include "include/lab1_sched_types.h"
 
@@ -40,14 +40,14 @@ void footprint_f(){
             if(i!=0){
                 if(j!=0)
                     if(footprint[i][j] == 1){
-                        printf("■ ");
+                        printf("■");
                         footprint[i][j] =0;
                     }               
                     else 
-                        printf("□ ");
-                else printf("%c ",(i+32));
+                        printf("□");
+                else printf("%c", (32+i));
                 
-            }else printf("%d ",j);
+            }else printf("%d",j);
             
         }
         printf("\n");
