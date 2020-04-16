@@ -307,7 +307,7 @@ _env_MLFQ
     int * step = (int *)malloc(sizeof(int));
     *step = 0;
     sched_queue * rq= NULL;
-    
+    printf("Q[0]->time_slice : %d \nQ[1]->time_slice %d\nQ[2]->time_slice: %d\n",Q[0]->time_slice,Q[1]->time_slice,Q[2]->time_slice);
     for(t =0; 1; t++){        
         //흘러가는 시가안
         ///1: 새로운 태스크를 확인      
@@ -324,12 +324,16 @@ _env_MLFQ
             new_task->id=i++;
             new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
             Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
-            if(curr_task!=NULL)
-                if(curr_task->sched_priority > new_task->sched_priority){
-                    context_save(curr_task);//change ready
-                    prev_task = curr_task;
-                    curr_task =NULL;
-                }
+            // if(curr_task!=NULL)
+            //     if(curr_task->sched_priority > new_task->sched_priority){
+            //         context_save(curr_task);//change ready
+            //         prev_task = curr_task;
+            //         curr_task =NULL;
+            //         //그냥 q에 넣어주고 null로 만들까?**************
+            //         //그냥 q에 넣어주고 null로 만들까?**************
+            //         //그냥 q에 넣어주고 null로 만들까?**************
+
+            //     }
             new_task =NULL;
         }while(1);
         // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
