@@ -379,7 +379,7 @@ _env_MLFQ
                     curr_task->fin_time=t;
                     tempslice=0;
                 }
-                elseS
+                else
                     prev_task = curr_task;
                 curr_task = NULL; //현재 수행중인 Task가 없음
             }
