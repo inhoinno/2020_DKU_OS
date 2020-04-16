@@ -92,13 +92,13 @@ E       2       8           E   4   4
     int policy=0;
     int test=0;
     policy= FCFS_SCHED;
-    test1(policy);
+    //test1(policy);
     test2(policy);
     policy = ROUND_ROBIN_SCHED;
-    test1(policy);
+    //test1(policy);
+    test2(policy);
+
     policy = MLFQ_SCHED;
-    test1(policy);
-
-
-    
+    //test1(policy);
+    test2(policy);    
 }
