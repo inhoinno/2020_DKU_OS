@@ -30,7 +30,7 @@
 
 #define _RR_TIME_SLICE 2
 
-int footprint [16][100];
+int footprint [8][64];
 void footprint_f(){
     int i;
     int j;
@@ -210,6 +210,7 @@ _env_FCFS
         if(curr_task !=NULL){
             cpu(cpu_st , curr_task, t);
             if(curr_task->spent_time == curr_task->total_time){
+                //context save
                 curr_task->state = TASK_DONE;
                 cpu_st->cpu_state =CPU_EMPTY;
             }
@@ -246,9 +247,9 @@ _env_RR
         ///1: 새로운 태스크를 확인      
 /*1*/   do{
             task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
-            if(new_task == NULL){
-                free(new_task);
-                break;}
+            if(new_task == NULL)
+                break;
+            else joblist = joblist->next_item;
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->id=i++;
             ///new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
@@ -263,7 +264,6 @@ _env_RR
                 enqueue(rq, prev_task); prev_task=NULL;
             }else{
                 //prev_task is done
-                
                 prev_task =NULL;
             }
         }
