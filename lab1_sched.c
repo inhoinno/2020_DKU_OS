@@ -257,7 +257,7 @@ _env_RR
             new_task =NULL;
         }while(1);// while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
 
-        //2 : 기존의 태스크 확인
+        //2 : 기존의 태스크 확인s
 /*2*/   if(prev_task != NULL){
             if(prev_task -> state != TASK_DONE){
                 //prev_task->priority += 1;
@@ -277,18 +277,18 @@ _env_RR
 //3
 /*3.1*/ if(time_to_schedule(tempslice, cpu_st ,rq)>0){      
             curr_task =schedule(rq); tempslice =0;}
-        
-/*3.2*/ cpu(cpu_st , curr_task, t);                
-        tempslice++;
-            
+        if(curr_task !=NULL){
+/*3.2*/     cpu(cpu_st , curr_task, t);                
+            tempslice++;
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-/*3.3*/ if((cpu_st->cpu_state= TASK_DONE) || (tempslice == time_slice)){
-            context_save(curr_task);
-            prev_task = curr_task;
-            if(prev_task->state == TASK_DONE){
-                cpu_st->cpu_state =CPU_EMPTY;
-                prev_task->fin_time = t;
-                tempslice=0;
+/*3.3*/     if((cpu_st->cpu_state == TASK_DONE) || (tempslice == time_slice)){
+                context_save(curr_task);
+                prev_task = curr_task;
+                if(prev_task->state == TASK_DONE){
+                    cpu_st->cpu_state =CPU_EMPTY;
+                    prev_task->fin_time = t;
+                    tempslice=0;
+                }
             }
         }
     
