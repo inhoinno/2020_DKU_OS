@@ -316,7 +316,7 @@ _env_MLFQ
     int * step = (int *)malloc(sizeof(int));
     *step = 0;
     sched_queue * rq= NULL;
-    printf("Q[0]->time_slice : %d \nQ[1]->time_slice %d\nQ[2]->time_slice: %d\n",Q[0]->time_slice,Q[1]->time_slice,Q[2]->time_slice);
+    printf("Q[0]->time_slice : %d \nQ[1]->time_slice %d\nQ[2]->time_slice: %d\n   ",Q[0]->time_slice,Q[1]->time_slice,Q[2]->time_slice);
     rq=Q[0];
     time_slice=rq->time_slice;
 
@@ -553,7 +553,7 @@ void cpu
         context_save(task);
     }
     footprint[task->id][timestamp] = 1;
-    printf("%c ", task->pid);
+    printf("%c", task->pid);
 }
 
 int EndWorkload(sched_queue * Q[], cpu_state * cpu, tasklist * joblist){
