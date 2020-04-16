@@ -99,7 +99,7 @@ typedef struct Task_strct{
 	//Time that task will spent cpu
 	int 			spent_time;
 	//Time that has used cpu
-
+ 
 	//Task's time
 	int				arr_time; 
 	//Time that task arrived 

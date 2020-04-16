@@ -1,3 +1,154 @@
+int 
+_env_MLFQ
+(sched_queue *Q [] , cpu_state * cpu_st, tasklist * joblist)
+{
+    int tempslice=0;
+    int time_slice;
+    int t;
+    int i=1;
+    
+    task_strct * prev_task =NULL;
+    task_strct * curr_task =NULL;
+
+    int * step = (int *)malloc(sizeof(int));
+    *step = 0;
+    sched_queue * rq= NULL;
+    printf("Q[0]->time_slice : %d \nQ[1]->time_slice %d\nQ[2]->time_slice: %d\n",Q[0]->time_slice,Q[1]->time_slice,Q[2]->time_slice);
+    rq=Q[0];
+
+    for(t =0; 1; t++){        
+/*1 새로운 태스크*/   
+        do{
+            task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
+            if(new_task == NULL)
+                break;
+            else joblist = joblist->next_item;
+            //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+            new_task->id=i++;
+            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
+            Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
+            if(curr_task!=NULL)
+                if(curr_task->spent_time >= curr_task->myrq->time_slice){
+                    context_save(curr_task);//change ready
+                    //prev_task = curr_task;
+                    lower_priority(curr_task); curr_task->qtime=0;
+                    Enqueue(Q,curr_task);
+                    curr_task =NULL;
+                }
+            new_task =NULL;
+        }while(1);
+        // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
+        if(EndWorkload(Q, cpu_st, joblist)) break;
+        //2 : 기존의 태스크 확인
+/*2 currtask에 스케쥴*/   
+        if( time_to_schedule(tempslice, cpu_st, rq) || isTopQueue(Q,rq) ){ 
+            //선점 조건1. CPU EMPTY
+            //2. myrq의 시간 조건 만료
+            //rq가 topQ가 아니라면 true return(topQ가 empty가 아닐때)     
+            rq = (sched_queue *)SelectScheduler(Q);
+            curr_task=schedule(rq); 
+            if(curr_task == NULL){
+                write(STDERR_FILENO, "SCHEDULE : Q is empty dequeue error\n", 45);
+                exit(-1);
+            }
+            time_slice = rq->time_slice;
+            tempslice =0;
+        }
+
+        // if(prev_task != NULL){
+        //     if(prev_task -> state != TASK_DONE){
+        //         //prev_task->priority += 1;
+        //         //RULE 4 based on current time spent in rq, lower level
+        //         if(prev_task ->qtime >= rq->time_slice || tempslice == time_slice){//!(prev_task는 0현재 큐에서의 시간을 다 썼다)
+        //             lower_priority(prev_task); prev_task->qtime=0;}
+        //         Enqueue(Q, prev_task); //enqueue to Q by task's priority
+        //         prev_task=NULL;
+        //     }else {
+        //         //prev_task is done11
+        //         prev_task =NULL;
+        //     }
+        // }
+        //RULE 5 booosting here 
+        //init bitmap because 1. prev task done 2 . boosting
+        
+        //QIsEmpty, cpu_st->cpu_state == 0
+//3 curr task에 수행    
+/*3.1*/ //RULE 4 based on current time spent in rq, lower level
+        
+        if(curr_task != NULL){
+/*3.2*/     cpu(cpu_st, curr_task,t);tempslice++;             
+/*4 조건을 확인하고 lower -> enqueue*/ 
+        if( !IsEmpty(Q) ){//Q가 모두 empty라면 task를 계속 수행함
+            if((curr_task->spent_time == curr_task->total_time) || tempslice == time_slice){
+                context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
+                if(curr_task->state == TASK_DONE){
+                    curr_task->fin_time=t;
+                    tempslice=0;
+                }
+                else
+                    prev_task = curr_task;
+                curr_task = NULL; //현재 수행중인 Task가 없음
+            }
+        }
+    }
+    
+    if(Assert(Q,cpu_st) <0) 
+        return -1;
+    
+    //SUCCESS RR
+    return 1; 
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "A      0   3"
  ^pid   ^a  ^run
 "B 2 6"
