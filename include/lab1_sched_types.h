@@ -155,6 +155,8 @@ int _env_RR
 int _env_MLFQ
 (sched_queue *Q [] , cpu_state * cpu_st, tasklist * joblist);
  
+int 
+IsEmpty(sched_queue ** Q);
 void cpu
 (cpu_state * cpu , task_strct * task,int timestamp);
 
