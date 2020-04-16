@@ -36,23 +36,21 @@ void footprint_f(){
     int i;
     int j;
     for(i=0; i<6; i++){
-        for(j=0; j<_MAX_WORKLOAD_TIME -4; j++){
-            if(i!=0){
-                if(j!=0)
-                    if(footprint[i][j] == 1){
-                        printf("■ ");
-                        footprint[i][j] =0;
-                    }               
-                    else 
-                        printf("□ ");
-                else {
-                    char c = 'A';
-                    printf("%c ", c+i-1);
-                }
-                
-            }else printf(" %d",j);
+        for(j=0; j<_MAX_WORKLOAD_TIME; j++)
+            if(j!=0)
+                if(footprint[i][j] == 1){
+                    printf("■");
+                    footprint[i][j] =0;
+                }               
+                else 
+                    printf("□");
+            else {
+                char c = 'A';
+                printf("%c ", c+i-1);
+            }          
             
-        }
+            
+        
         printf("\n");
     }
 
