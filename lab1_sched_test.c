@@ -47,8 +47,8 @@ int test1(int sched_policy)
     { // 0 2 45 (6)
         "A 0 3",
         "B 2 6",
-        "C 4 5",
-        "D 6 4",
+        "C 4 4",
+        "D 6 5",
         "E 8 2",};
     int scenario_length = _SIZEOF_TEST1; 
     //이게 안되면 struct로 토큰 따서 주면 됨
