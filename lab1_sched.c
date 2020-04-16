@@ -46,11 +46,11 @@ void footprint_f(){
                     else 
                         printf("□ ");
                 else {
-                    char c = (char)(i+32);
-                    printf("%c", c);
+                    char c = 'A';
+                    printf("%c ", c+i-1);
                 }
                 
-            }else printf("%d",j);
+            }else printf(" %d",j);
             
         }
         printf("\n");
