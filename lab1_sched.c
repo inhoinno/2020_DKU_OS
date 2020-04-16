@@ -120,7 +120,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         }
         case ROUND_ROBIN_SCHED:
         {//rQ 초기화
-        int slice =2; //#define timeslice
+        int slice =1; //#define timeslice
         //scanf_s("%d", slice , sizeof(slice));
         Q = init_sched(sched_policy,slice);
         cpu = init_cpu();
