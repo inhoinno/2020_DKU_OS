@@ -414,12 +414,14 @@ void cpu(cpu_state * state , task_strct * task, int timestamp)
 int EndWorkload(sched_queue * Q[], cpu_state * cpu, tasklist * joblist){
     int i;
     if (cpu->cpu_state == CPU_EMPTY){
-        if(joblist ==NULL)    
+        if(joblist ==NULL){    
             for(i=0; i<3; i++) {
-                if(isEmpty(Q[i]) < 0)
+                if(isEmpty(Q[i]) != 1) //1 true, q is empty
                     return 0;
             }
-        return 1;
+            return 1;
+        }//else
+        return 0;
     }
     else return 0;
 }
