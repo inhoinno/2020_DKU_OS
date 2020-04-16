@@ -281,8 +281,8 @@ _env_RR
 /*3.2*/     cpu(cpu_st , curr_task, t);                
             tempslice++;
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-/*3.3*/     if((cpu_st->cpu_state == TASK_DONE) || (tempslice == time_slice)){
-                context_save(curr_task);
+/*3.3*/     if((curr_task->spent_time == curr_task->total_time) || (tempslice == time_slice)){
+                context_save(curr_task); //change to TASK DONE or TASK READY
                 prev_task = curr_task;
                 if(prev_task->state == TASK_DONE){
                     cpu_st->cpu_state =CPU_EMPTY;
