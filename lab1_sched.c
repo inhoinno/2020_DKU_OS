@@ -338,15 +338,17 @@ _env_MLFQ
             if( time_to_schedule(tempslice, cpu_st, rq) || !isTopQueue(Q,rq) ){ 
                 //선점 조건1. CPU EMPTY
                 //2 . myrq의 시간 조건 만료
-                //rq가 topQ가 아니라면 true return(topQ가 empty가 아닐때)     
-            rq = (sched_queue *)SelectScheduler(Q);
-            curr_task=schedule(rq); 
-            if(curr_task == NULL){
-                write(STDERR_FILENO, "SCHEDULE : Q is empty dequeue error\n", 45);
-                exit(-1);
-            }
-            time_slice = rq->time_slice;
-            tempslice =0;
+                //rq가 topQ가 아니라면 true return(topQ가 empty가 아닐때)    
+                if(curr_task->qtime >= curr_task->myrq->time_slice){
+                    rq = (sched_queue *)SelectScheduler(Q);
+                    curr_task=schedule(rq); 
+                    if(curr_task == NULL){
+                        write(STDERR_FILENO, "SCHEDULE : Q is empty dequeue error\n", 45);
+                        exit(-1);
+                    }
+                time_slice = rq->time_slice;
+                tempslice =0;
+                }
             }
         }
         
@@ -372,6 +374,7 @@ _env_MLFQ
 /*3.1*/ //RULE 4 based on current time spent in rq, lower level
         
         if(curr_task != NULL){
+            printf("\n%c ", curr_task->pid);
 /*3.2*/     cpu(cpu_st, curr_task,t);tempslice++;             
 /*4 조건을 확인하고 lower -> enqueue*/ 
         if(!IsEmpty(Q))
@@ -735,7 +738,7 @@ SelectScheduler(sched_queue * Q[]){
     else if ( isEmpty(Q[1]) ==0 ) 
         return Q[1];
     else 
-        return Q[3];
+        return Q[2];
 }
 int //return type?
 Enqueue(sched_queue * Q[], task_strct * task)
