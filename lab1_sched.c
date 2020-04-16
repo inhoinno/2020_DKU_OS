@@ -374,7 +374,6 @@ _env_MLFQ
 /*3.1*/ //RULE 4 based on current time spent in rq, lower level
         
         if(curr_task != NULL){
-            printf("\n%c ", curr_task->pid);
 /*3.2*/     cpu(cpu_st, curr_task,t);tempslice++;             
 /*4 조건을 확인하고 lower -> enqueue*/ 
         if(!IsEmpty(Q))
