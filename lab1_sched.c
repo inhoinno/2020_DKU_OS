@@ -335,11 +335,11 @@ _env_MLFQ
         //2 : 기존의 태스크 확인
 /*2 currtask에 스케쥴*/   
         if(!IsEmpty(Q)){
-            if( time_to_schedule(tempslice, cpu_st, rq) || !isTopQueue(Q,rq) ){ 
+            if( time_to_schedule(tempslice, cpu_st, rq)  ){ //|| !isTopQueue(Q,rq)
                 //선점 조건1. CPU EMPTY
                 //2 . myrq의 시간 조건 만료
                 //rq가 topQ가 아니라면 true return(topQ가 empty가 아닐때)    
-                if(curr_task->qtime >= curr_task->myrq->time_slice){
+                //if(curr_task->qtime >= curr_task->myrq->time_slice){
                     rq = (sched_queue *)SelectScheduler(Q);
                     curr_task=schedule(rq); 
                     if(curr_task == NULL){
@@ -348,7 +348,7 @@ _env_MLFQ
                     }
                 time_slice = rq->time_slice;
                 tempslice =0;
-                }
+                //}
             }
         }
         
