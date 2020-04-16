@@ -606,11 +606,12 @@ Enqueue(sched_queue * Q[], task_strct * task)
 {
     //여기에서 priority를 수정할까?
     //1. task의 
-    if(task->qtime < task->myrq->time_slice) //RULE 4 regardless of CPU given
-        task->qtime +=1;     
-
+    if(task->myrq != NULL)
+        if(task->qtime < task->myrq->time_slice) //RULE 4 regardless of CPU given
+            task->qtime +=1;
     if (enqueue(Q[task->sched_priority],task) >0)
         return 1;
+    
     char buf[64];
     sprintf(buf,"error in 'enqueue' task : %c spent_time : %d\n", task->pid, task->spent_time);
     write(STDERR_FILENO, buf, 64);
@@ -619,6 +620,7 @@ Enqueue(sched_queue * Q[], task_strct * task)
 int //return type?
 enqueue(sched_queue * rq , task_strct * task)
 {
+    task->myrq= rq;
     if(isEmpty(rq)){
         rq->front = task;
         rq->rear = task;
