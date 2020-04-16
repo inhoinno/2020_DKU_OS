@@ -91,14 +91,20 @@ E       2       8           E   4   4
     //       rr    test1
     int policy=0;
     int test=0;
-    policy= FCFS_SCHED;
-    //test1(policy);
-    test2(policy);
-    policy = ROUND_ROBIN_SCHED;
-    //test1(policy);
-    test2(policy);
 
+    policy= FCFS_SCHED;
+    printf("*********** test 1 ***********\n");
+    test1(policy);
+    policy = ROUND_ROBIN_SCHED;
+    test1(policy);
     policy = MLFQ_SCHED;
-    //test1(policy);
+    test1(policy);
+
+    printf("\n************ test2 ************\n");
+    policy= FCFS_SCHED;
+    test2(policy);   
+    policy = ROUND_ROBIN_SCHED;
+    test2(policy);    
+    policy = MLFQ_SCHED;
     test2(policy);    
 }
