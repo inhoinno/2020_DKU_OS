@@ -40,12 +40,15 @@ void footprint_f(){
             if(i!=0){
                 if(j!=0)
                     if(footprint[i][j] == 1){
-                        printf("■");
+                        printf("■ ");
                         footprint[i][j] =0;
                     }               
                     else 
-                        printf("□");
-                else printf("%c", (32+i));
+                        printf("□ ");
+                else {
+                    char c = (char)(i+32);
+                    printf("%c", c);
+                }
                 
             }else printf("%d",j);
             
