@@ -308,6 +308,7 @@ _env_MLFQ
     sched_queue * rq= NULL;
     printf("Q[0]->time_slice : %d \nQ[1]->time_slice %d\nQ[2]->time_slice: %d\n",Q[0]->time_slice,Q[1]->time_slice,Q[2]->time_slice);
     rq=Q[0];
+    time_slice=rq->time_slice;
 
     for(t =0; 1; t++){        
 /*1 새로운 태스크*/   
@@ -321,7 +322,7 @@ _env_MLFQ
             new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
             Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
             if(curr_task!=NULL)
-                if(curr_task->spent_time >= curr_task->myrq->time_slice){
+                if( tempslice >= time_slice){
                     context_save(curr_task);//change ready
                     //prev_task = curr_task;
                     lower_priority(curr_task); curr_task->qtime=0;
@@ -335,7 +336,7 @@ _env_MLFQ
         //2 : 기존의 태스크 확인
 /*2 currtask에 스케쥴*/   
         if(!IsEmpty(Q)){
-            if( time_to_schedule(tempslice, cpu_st, rq)|| !isTopQueue(Q,rq) ){ //
+            if( time_to_schedule(tempslice, cpu_st, rq)){ //
                 //선점 조건1. CPU EMPTY
                 //2 . myrq의 시간 조건 만료
                 //rq가 topQ가 아니라면 true return(topQ가 empty가 아닐때)    
@@ -747,7 +748,7 @@ Enqueue(sched_queue * Q[], task_strct * task)
     if(task->myrq != NULL)
         if(task->qtime < task->myrq->time_slice) //RULE 4 regardless of CPU given
             task->qtime +=1;
-    if (enqueue(Q[task->sched_priority],task) >0)
+    if (enqueue(Q[task->sched_priority],task) >0) //BUFFER OVERFLOW 취약점
         return 1;
     
     char buf[64];
@@ -836,7 +837,7 @@ int
 isTopQueue(sched_queue ** Q, sched_queue * rq){
     if(rq != NULL){
         if(!isEmpty(Q[0]))//then top prirority queue exist
-            if( (rq->my_level - Q[0]->my_level ==0) )
+            if( (rq->my_level - Q[0]->my_level )==0 )
                 return 1;
         else
             return 0;
