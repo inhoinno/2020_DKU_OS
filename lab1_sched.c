@@ -578,7 +578,7 @@ sched_queue ** init_bitmap(){
     for(i=0; i<3 ; i++){
         MLFQ[i] = (sched_queue * )malloc(sizeof(sched_queue));
         MLFQ[i]->my_level = i;
-        MLFQ[i]->time_slice = 2^i;
+        MLFQ[i]->time_slice = (int)(1<<i);
         MLFQ[i]->front =NULL;
         MLFQ[i]->rear = NULL;
         MLFQ[i]->policy = ROUND_ROBIN_SCHED;
