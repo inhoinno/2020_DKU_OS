@@ -36,7 +36,7 @@ void footprint_f(){
     int i;
     int j;
     for(i=0; i<6; i++){
-        for(j=0; j<_MAX_WORKLOAD_TIME -10; j++){
+        for(j=0; j<_MAX_WORKLOAD_TIME -4; j++){
             if(i!=0){
                 if(j!=0)
                     if(footprint[i][j] == 1){
