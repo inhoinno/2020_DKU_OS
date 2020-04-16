@@ -29,13 +29,14 @@
 #include "include/lab1_sched_types.h"
 
 #define _RR_TIME_SLICE 2
-
-int footprint [8][64];
+#define _MAX_PROCESS_LIMIT 8
+#define _MAX_WORKLOAD_TIME 32
+int footprint [_MAX_PROCESS_LIMIT][_MAX_WORKLOAD_TIME];
 void footprint_f(){
     int i;
     int j;
     for(i=1; i<6; i++){
-        for(j=0; j<50; j++)
+        for(j=0; j<_MAX_WORKLOAD_TIME; j++)
             if(footprint[i][j] == 1){
                 printf("■");
                 footprint[i][j] =0;
@@ -49,8 +50,6 @@ void footprint_f(){
 }
 /*
  * you need to implement FCFS, RR, SPN, SRT, HRRN, MLFQ scheduler. 
- * 
- * 
  
 //주요 함수들
 int Run_workload();
@@ -70,15 +69,6 @@ int assert(sched_queue * , cpu_state *);
 int Assert(sched_queue * Q[], cpu_state *);
  */
 
-//TO DO
-    //cpu() 
-    //API
-    //Enqueue(shced_queue * Q[],task_strct task), enqueue(sched_queue * rq,task_strct task)
-    //init
-    //Scenario DS
-    //MLFQ
-    //STRIDE
-    //STRIDE API
 
 //#Define Scheduling Source Code
 // int init_workload(char * scenario[] , task_strct * ret){
@@ -138,7 +128,6 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         //rQ 초기화
         sched_queue ** rQ = init_bitmap();
         cpu = init_cpu();
-
         if(_env_MLFQ(rQ, cpu, HeadList->head) < 0)
             return -1;
         printf("MLFQ sucess! \n");
@@ -363,12 +352,7 @@ _env_MLFQ
         if(EndWorkload(Q, cpu_st, joblist)) break;
         //QIsEmpty, cpu_st->cpu_state == 0
 //3
-/*3.1*/ //1. is Top Q empty?
-            //1. is current rq empty?
-                //yes then 
-            //2. else then
-                //schedule it (dequeue)
-        //RULE 4 based on current time spent in rq, lower level
+/*3.1*/ //RULE 4 based on current time spent in rq, lower level
         if( time_to_schedule(tempslice, cpu_st, rq) || isTopQueue(Q,rq) ){ 
             //isTopQueue는 rq와 topQ의 priority 비교, rq가 더 높으면 1(true)return     
             rq = (sched_queue *)SelectScheduler(Q);//think about bitmap hereb
@@ -384,7 +368,7 @@ _env_MLFQ
 /*3.2*/ cpu(cpu_st, curr_task,t);tempslice++; //cpu 에서 task->time ++ 
             
         //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-/*3.3*/ if(cpu_st->cpu_state = TASK_DONE || tempslice == time_slice){
+/*3.3*/ if((curr_task->spent_time == curr_task->total_time) || tempslice == time_slice){
             context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
             if(curr_task->state == TASK_DONE){
                 curr_task->fin_time=t;
