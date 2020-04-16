@@ -386,6 +386,18 @@ _env_MLFQ
                     prev_task = curr_task;
                 curr_task = NULL; //현재 수행중인 Task가 없음
             }
+            if(prev_task != NULL){
+                if(prev_task -> state != TASK_DONE){
+                    //prev_task->priority += 1;
+                    //RULE 4 based on current time spent in rq, lower level
+                    if(prev_task ->qtime >= rq->time_slice || tempslice == time_slice){//!(prev_task는 0현재 큐에서의 시간을 다 썼다)
+                        lower_priority(prev_task); prev_task->qtime=0;}
+                    Enqueue(Q, prev_task); //enqueue to Q by task's priority
+                    prev_task=NULL;
+                }else
+                    prev_task =NULL;//prev_task is done11
+                
+            }
         }
         }
     }
