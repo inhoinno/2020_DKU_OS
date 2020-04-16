@@ -551,7 +551,7 @@ void cpu
         state->cpu_state = CPU_EMPTY;
         context_save(task);
     }
-    footprint[task->id +1][timestamp] = 1;
+    footprint[task->id][timestamp] = 1;
     printf("%c ", task->pid);
 }
 
