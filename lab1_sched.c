@@ -371,20 +371,21 @@ _env_MLFQ
         if(curr_task != NULL){
 /*3.2*/     cpu(cpu_st, curr_task,t);tempslice++;             
 /*4 조건을 확인하고 lower -> enqueue*/ 
-        if( !IsEmpty(Q) ){//Q가 모두 empty라면 task를 계속 수행함
+        if(!IsEmpty(Q))
+        {//Q가 모두 empty라면 task를 계속 수행함
             if((curr_task->spent_time == curr_task->total_time) || tempslice == time_slice){
                 context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
                 if(curr_task->state == TASK_DONE){
                     curr_task->fin_time=t;
                     tempslice=0;
                 }
-                else
+                elseS
                     prev_task = curr_task;
                 curr_task = NULL; //현재 수행중인 Task가 없음
             }
         }
+        }
     }
-    
     if(Assert(Q,cpu_st) <0) 
         return -1;
     
@@ -501,6 +502,14 @@ _env_MLFQ
 // ()
 // {}
 // //#Endif Scheduling Source code.
+int 
+IsEmpty(sched_queue ** Q) {
+    if(isEmpty(Q[0]))
+        if(isEmpty(Q[1]))
+            if(isEmpty(Q[2]))
+                return 1;
+    return 0;
+}
 void cpu
 (cpu_state * state , task_strct * task, int timestamp)
 {
