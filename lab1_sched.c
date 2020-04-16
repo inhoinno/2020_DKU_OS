@@ -35,14 +35,21 @@ int footprint [_MAX_PROCESS_LIMIT][_MAX_WORKLOAD_TIME];
 void footprint_f(){
     int i;
     int j;
-    for(i=1; i<6; i++){
-        for(j=0; j<_MAX_WORKLOAD_TIME; j++)
-            if(footprint[i][j] == 1){
-                printf("■");
-                footprint[i][j] =0;
-            }               
-            else 
-                printf("□");
+    for(i=0; i<6; i++){
+        for(j=0; j<_MAX_WORKLOAD_TIME -10; j++){
+            if(i!=0){
+                if(j!=0)
+                    if(footprint[i][j] == 1){
+                        printf("■ ");
+                        footprint[i][j] =0;
+                    }               
+                    else 
+                        printf("□ ");
+                else printf("%c ",(i+32));
+                
+            }else printf("%d ",j);
+            
+        }
         printf("\n");
     }
 
@@ -544,7 +551,7 @@ void cpu
         state->cpu_state = CPU_EMPTY;
         context_save(task);
     }
-    footprint[task->id][timestamp] = 1;
+    footprint[task->id +1][timestamp] = 1;
     printf("%c ", task->pid);
 }
 
