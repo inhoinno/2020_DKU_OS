@@ -127,7 +127,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
 
         if(_env_RR(Q, cpu, HeadList->head) < 0)
             return -1;
-        printf("RR sucess! \n ");
+        printf("RR sucess! \n");
         //결과에 대한 보고
         break;
         }
@@ -139,7 +139,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
 
         if(_env_MLFQ(rQ, cpu, HeadList->head) < 0)
             return -1;
-        printf("MLFQ sucess! \n ");
+        printf("MLFQ sucess! \n");
         //결과에 대한 보고
         break;
         }
@@ -230,7 +230,7 @@ int
 _env_RR
 (sched_queue * rq, cpu_state * cpu_st, tasklist* joblist)
 {
-    int i=0;
+    int i=1;
     int t=0;
     int tempslice=0;
     int time_slice=rq->time_slice;
