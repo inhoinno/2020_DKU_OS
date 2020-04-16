@@ -120,7 +120,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         if(_env_RR(Q, cpu, HeadList->head) < 0)
             return -1;
         printf("RR sucess! \n");
-        printf("A A B A B C B D C B E D C B E D C B C C (Expected, t=1) \n");
+        printf("A A B A B C B D C B E D C B E D C B D D (Expected, t=1) \n");
 
         //결과에 대한 보고
         break;
