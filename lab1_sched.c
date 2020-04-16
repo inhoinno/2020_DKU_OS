@@ -352,7 +352,8 @@ _env_MLFQ
         //init bitmap because 1. prev task done 2 . boosting
         if(EndWorkload(Q, cpu_st, joblist)) break;
         //QIsEmpty, cpu_st->cpu_state == 0
-//3
+//3     
+        if (rq ==NULL ) rq = (sched_queue *)SelectScheduler(Q);
 /*3.1*/ //RULE 4 based on current time spent in rq, lower level
         if( time_to_schedule(tempslice, cpu_st, rq) || isTopQueue(Q,rq) ){ 
             //isTopQueue는 rq와 topQ의 priority 비교, rq가 더 높으면 1(true)return     
@@ -700,12 +701,11 @@ isEmpty(sched_queue * rq){
 
 int
 isTopQueue(sched_queue ** Q, sched_queue * rq){
-    if(rq!= NULL){
+    if(rq != NULL){
         if(!isEmpty(Q[0]))//then top prirority queue exist
-            return (rq->my_level - Q[0]->my_level);
-        else if (!isEmpty(Q[1]))
-            return (rq->my_level - Q[1]->my_level);
-        else 
+            if( (rq->my_level - Q[0]->my_level ==0) )
+                return 1;
+        else
             return 0;
 
     }
