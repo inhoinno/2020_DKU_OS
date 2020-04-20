@@ -364,8 +364,10 @@ _env_MLFQ
         }while(1);
         // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
         if(EndWorkload(Q, cpu_st, joblist)) break;
-        if(BOOST % t == 0)
+        if(t == BOOST){
             MLFQ_boosting(Q);
+            BOOST = BOOST *2;
+        }
         
         //2 : 기존의 태스크 확인
 /*2 currtask에 스케쥴*/   
