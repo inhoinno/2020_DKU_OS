@@ -10,7 +10,7 @@
 *
 */
 
-//include <aio.h>
+#include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-//#include <asm/unistd.h>
+#include <asm/unistd.h>
 
 #include "include/lab1_sched_types.h"
 
