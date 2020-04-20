@@ -825,8 +825,8 @@ _init_STRIDE_ABC()
 	List * ret = malloc(sizeof(List));
 	char * scenario[3] = {
 		"A 0 12", //3
-		"B 0 12", //2
-		"C 0 12" //1
+		"B 0 8", //2
+		"C 0 4" //1
 	};
 	int ratio =1;
     int i;
