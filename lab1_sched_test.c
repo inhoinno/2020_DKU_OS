@@ -110,4 +110,12 @@ E       2       8           E   4   4
     policy = MLFQ_SCHED;
     if(test2(policy)>0)   
 		printf("*********TEST 2 COMPLETE ! **********\n");
+
+    printf("\n************ STRIDE test A:B:C = 3:2:1 ************\n");
+    policy = STRIDE_SCHED;
+    if(test1(policy) >0)
+        printf("*********BONUS : STRIDE COMPLETE!!!!! **********\n");
+    
+
+
 }
