@@ -10,7 +10,7 @@
 *
 */
 
-#include <aio.h>
+//include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <pthread.h>
-#include <asm/unistd.h>
+//#include <asm/unistd.h>
 
 #include "include/lab1_sched_types.h"
 
@@ -93,8 +93,11 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
     sched_queue * Q= malloc(sizeof(sched_queue)); 
     cpu_state * cpu =malloc(sizeof(cpu_state));
     List * HeadList =malloc(sizeof(List));
+    List * strideList = malloc(sizeof(List));
     HeadList ->head =NULL;
     HeadList->last =NULL;
+    strideList->head =NULL;
+    strideList->last =NULL;
 
     if(init_tasklist(HeadList , scenario, scenario_length)<0 )
         exit(-111);
@@ -146,17 +149,18 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         //결과에 대한 보고
         break;
         }
-        // case STRIDE_SCHED:
-        // {//rQ 초기화
+        case STRIDE_SCHED:
+        {//rQ 초기화
         // sched_queue * Q = init_sched(sched_policy,4);
-        // cpu_state * cpu = init_cpu();
-
-        // if(_env_STRIDE() < 0)
-        //     return -1;
-        // printf("STRDIE sucess! \n ");
+            strideList = _init_STRIDE_ABC(); // A : 3 B :2 C :1
+            cpu_state * cpu = init_cpu();
+            heap_stride * heap = init_stride_heap(3); //heap 은 2^n -1 의 크기라 가정, 현재 1 -23-NIL
+            if(_env_STRIDE(heap, cpu ,strideList->head) < 0)
+                return -1;
+            printf("STRDIE sucess! \n ");
         // //결과에 대한 보고
-        // break;
-        //}
+            break;
+        }
         default:
             printf("case : No such Sched %d",sched_policy);
             exit(-1);
@@ -532,18 +536,14 @@ _env_MLFQ
 */
 int 
 _env_STRIDE
-(STRIDE_Heap * minHeap, cpu_state * cpu_st, tasklist * joblist)
+(heap_stride * minHeap, cpu_state * cpu_st, tasklist * joblist)
 {
-            set_STRIDE(new_task);            
-            addMinHeap(minHeap)
-            Stride_endWorkload();
-            schedule_STRIDE(minHeap);
-
-
+    //farness 보기 위해서 ABC 를 0에 모두 fork시키고
+    //각각의 비율을 3:2:1 로 미리 가정해 보았다
     //stride는 task strct상에 자신의 vruntime을 가지고 시작해야함
     int t =0;
     int i =0;
-    task_strct * prev_task =NULL;
+    //task_strct * prev_task =NULL;
     task_strct * curr_task =NULL;
     for(t=0; 1; t++){
         //1. t에 따른 joblist에서 빼온다
@@ -554,37 +554,45 @@ _env_STRIDE
             else joblist = joblist->next_item;
             //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
             new_task->id=i++;
-            set_STRIDE(new_task);
+            set_STRIDE_task(new_task);
             //vruntime 을 설정하고(0) Heap에 넣는다
             new_task->vruntime=0;
             addMinHeap(new_task , minHeap);
             new_task =NULL;
         }while(1);
-        Stride_endWorkload();
+
+        if(Stride_endWorkload(minHeap, cpu_st, joblist) >0)
+            break;//1. joblist 2. minheap empty 3. cpu state == cpudone
         
         //2. schedule: 가장 작은 vruntime을 pop한다
         //if(){
-            curr_task = schedule_STRIDE(minHeap);
+        curr_task = schedule_STRIDE(minHeap);
         //}
            
         //3. cpu에서 수행
         if(curr_task != NULL){
-            cpu_STRIDE(curr_task);
+            cpu(cpu_st, curr_task, t);
 
             if(cpu_st->cpu_state == CPU_EMPTY ){
                 //context_save()
                 curr_task->state == TASK_DONE;
+                curr_task->fin_time = t;
             }
-            else(){ 
+            else{ 
                 //4, task->vruntime += task->vruntime
                 //5  Minheapfiy  
-                curr_task->vruntime += task->stride;
-                addMinHeap(new_task , minHeap);
+                curr_task->vruntime += curr_task->STRIDE;
+                addMinHeap(curr_task , minHeap);
             }
+        }else{
+            printf("curr NULL \n");
+            break;
         }
        
 
-    } 
+    }
+    //assert
+    return 1; 
 
 }
 // //#Endif Scheduling Source code.
@@ -795,6 +803,74 @@ cpu_state * init_cpu(){
     cpu->cpu_state = CPU_EMPTY;
     return cpu;
 }
+
+List * 
+_init_STRIDE_ABC()
+{
+	List * ret = malloc(sizeof(List));
+	char * scenario[3] = {
+		"A 0 4", //3
+		"B 0 6", //2
+		"C 0 12" //1
+	};
+	int ratio =3;
+    int i;
+	for(i=0; i<3; i++){
+        tasklist * item = (tasklist * )malloc(sizeof(tasklist));
+        item->arriv_T=0;
+        item->current =NULL;
+        item->next_item=NULL;
+        //tasklist
+
+        task_strct * task = (task_strct *)malloc(sizeof(task_strct));
+        do_fork(scenario[i],task);
+		task->tickets = MAX_TICKETS / ratio;
+		ratio -=1;
+        //task 생성, tickets : 150 100 50
+        item->current = task;
+        item->arriv_T = task->arr_time;
+        
+        addList(ret, item);
+        item =item->next_item;
+    }
+	return ret;
+}
+
+heap_stride *
+init_stride_heap(int n)
+{
+	heap_stride * hnew = malloc(sizeof(heap_stride));
+	hnew->add_point =0;
+	int i;
+	int maxsize =  (1<<n) -1 ; //8 -1
+
+	hnew->maxsize = maxsize;
+	hnew->arrOfTaskStrct = malloc(sizeof(task_strct *) * maxsize);
+	for(i=0; i<maxsize; i++)
+		hnew->arrOfTaskStrct[i] = malloc(sizeof(task_strct));
+    
+	return hnew;
+}
+int
+set_STRIDE_task(task_strct * new)
+{
+	int base = new->total_time ;
+	char buf[64];
+
+	if(CM % base){
+		sprintf(buf,"Common Multiple err : %c->total = %d\n", new->pid, base);
+		write(STDERR_FILENO,buf,40);
+		exit(-1);
+	}
+	return 1;
+	//1. set stride based on Common Multiple
+	// new->STRIDE  = CM / lottery?
+	//fairness 를 지켜주려면 같은 시간 동안 대부분의 job들이 비슷한 시간에 끝나도록 함
+	
+	new->STRIDE = CM / new->tickets;
+    return 1;
+}
+
 //#Endif __init__
 
 //#Define __schedAPI__
@@ -847,7 +923,7 @@ enqueue(sched_queue * rq , task_strct * task)
 
 // }
 
-task_strct* dequeue(sched_queue * rq)
+task_strct * dequeue(sched_queue * rq)
 {
     task_strct * ret; 
     if(isEmpty(rq))
@@ -871,7 +947,99 @@ task_strct* dequeue(sched_queue * rq)
 // Schedule(sched_queue * Q[])
 // {
 
-// }
+int
+addMinHeap(task_strct  * task, heap_stride * heap)
+{
+	int addpoint = heap->add_point;
+
+	if(addpoint > heap->maxsize)
+		return -1;
+	heap->arrOfTaskStrct[addpoint];
+	heap->add_point = addpoint+1;
+	int i=addpoint;
+	while
+	(i>0 && heap->arrOfTaskStrct[i]->vruntime < heap->arrOfTaskStrct[(i-1)/2]->vruntime)
+	//조건문 해석 : minheap에서 자식 노드가 부모노드보다 작다면~ (&& i가 root노드가 아니면~)
+	{
+		//swap [i] and [i/2]
+		task_strct * temp = heap->arrOfTaskStrct[i];
+		heap->arrOfTaskStrct[i] = heap->arrOfTaskStrct[(i-1)/2];
+		heap->arrOfTaskStrct[(i-1)/2] =temp;
+		i = (i-1)/2;
+	}
+} 
+int 
+isheapEmpty(heap_stride * heap)
+{
+    int max_size = heap->maxsize;
+    task_strct ** arr = heap->arrOfTaskStrct;
+    int i;
+    for(i=0; i<max_size; i++)
+        if(arr[i] !=NULL)
+            return -1;
+    
+    return 1;
+
+
+}
+int
+Stride_endWorkload(heap_stride * minheap , cpu_state * cpu , tasklist * joblist)
+{
+	if(joblist==NULL)
+		if (cpu->cpu_state == CPU_EMPTY)
+			if(isheapEmpty(minheap))
+				return 1;
+	
+	return 0;
+}
+task_strct *
+schedule_STRIDE(heap_stride * minheap)
+{
+	task_strct * ret = minheap->arrOfTaskStrct[0];
+	minheap->add_point -= 1;
+	minheap->arrOfTaskStrct[0] = minheap->arrOfTaskStrct[minheap->add_point];
+	minheap->arrOfTaskStrct[minheap->add_point] =NULL;
+	MinHeapDown(minheap);
+	return ret;
+}
+int MinHeapDown(heap_stride *heap)
+//heapify
+{
+    task_strct ** arr = heap->arrOfTaskStrct;
+    task_strct *tmp;
+    int limit = heap->add_point;
+    int i=0; //root to downward
+    int k;
+    int left = (i + 1) * 2 - 1;
+    int right = (i + 1) * 2;
+    while (left <limit && right <limit)
+    {
+        k = (arr[left]->vruntime > arr[right]->vruntime) ? right:left;
+        if(arr[i]->vruntime > arr[k]->vruntime){
+            tmp = arr[i];
+            arr[i] =arr[k];
+            arr[k] =tmp;
+        }
+            //swap arr[i] arr[k]
+        i =k;
+        left = (i + 1)*2 -1;
+        right = (i + 1)*2;
+    }
+    if(right == limit){
+        //right가 limit이면 left는 존재한다는 뜻
+        if(arr[i]->vruntime > arr[left]->vruntime){
+            tmp = arr[i];
+            arr[i] =arr[left];
+            arr[left] =tmp;
+            i = left;
+        }
+    }
+
+    return i;
+}
+
+
+
 task_strct *
 schedule(sched_queue * rq)
 {

@@ -18,11 +18,14 @@
 #define ROUND_ROBIN_SCHED 2
 #define MLFQ_SCHED 3
 #define STRIDE_SCHED 4 
+#define MAX_TICKETS 300
+#define CM 15000
 typedef struct Task_strct task_strct;
 typedef struct Sched_queue sched_queue;
 typedef struct Cpu_state cpu_state;
 typedef struct Tasklist tasklist;
 typedef struct List List;
+typedef struct STR_Heap heap_stride;
 
 typedef struct List * pList;
 typedef task_strct * ptask_strct;
@@ -30,6 +33,8 @@ typedef sched_queue * psched_queue;
 typedef psched_queue ** ppsched_queue;
 typedef cpu_state * pcpu_st;
 typedef tasklist * ptasklist;
+typedef heap_stride * pheap_stride;
+
 
 // typedef io_context * poi_context;
 /*
@@ -43,11 +48,7 @@ typedef tasklist * ptasklist;
 	[0] [1] [2] [3] [4] [5] [6]
     root l   r  ll  lr
 */
-typedef struct STR_Heap{
-	int maxsize;
-	int size;
-	task_strct * arrOfTaskStrct;
-}STRIDE_Heap;
+
 
 #define CPU_EMPTY 0 
 #define CPU_RUNNING 1
@@ -64,6 +65,8 @@ typedef struct Cpu_state{
 // 	char			*str;
 // 	//io작업은 IO수행중이라는 메세지를 띄움
 // }io_context;
+
+
 typedef struct Sched_queue{
 	//What if FCFS?
 		// normal queue, task_struct *next; 
@@ -146,9 +149,18 @@ typedef struct Task_strct{
 	#ifdef STRIDE_SCHED
 		int 		vruntime;
 		int 		STRIDE; 
+		int			tickets;
 		//or (usigned long) , (unsigned int)
 	#endif	 
 }task_strct;
+
+typedef struct STR_Heap{
+	int maxsize;
+	int add_point;
+	task_strct ** arrOfTaskStrct;
+}heap_stride;
+
+
 
 
 sched_queue * init_sched(int policy, int t);
@@ -169,6 +181,9 @@ int _env_RR
 
 int _env_MLFQ
 (sched_queue *Q [] , cpu_state * cpu_st, tasklist * joblist);
+
+int _env_STRIDE
+(heap_stride * minheap, cpu_state * cpu , tasklist * joblist);
  
 int 
 IsEmpty(sched_queue ** Q);
@@ -200,11 +215,38 @@ init_tasklist
 int 
 do_fork(const char * str, task_strct * t);
 
+int
+MinHeapDown(heap_stride * heap);
+
+
 int 
 addList( List * L, tasklist * tl);
 
 task_strct *
 _Module_fork(tasklist * joblist, int t);
+
+//STRIDE
+List * 
+_init_STRIDE_ABC();
+
+heap_stride * 
+init_stride_heap(int n);
+
+int
+set_STRIDE_task(task_strct * new);
+
+int
+addMinHeap(task_strct  * task, heap_stride * heap);
+int 
+isheapEmpty(heap_stride * heap);
+int
+Stride_endWorkload
+(heap_stride * minheap , cpu_state * cpu , tasklist * joblist);
+task_strct *
+schedule_STRIDE(heap_stride * minheap);
+int MinHeapDown(heap_stride *heap);
+
+//STRIDE end
 //end
 sched_queue* init_sched
 (int policy, int slice);
