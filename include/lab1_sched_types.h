@@ -191,6 +191,7 @@ int _env_STRIDE
 
 int 
 IsEmpty(sched_queue ** Q);
+void showList(tasklist * head);
 
 void cpu
 (cpu_state * cpu , task_strct * task,int timestamp);

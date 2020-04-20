@@ -118,6 +118,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         if(_env_FCFS(Q, cpu, HeadList->head) < 0)
             return -1;
         printf(" FCFS sucess!\n");
+        showList(HeadList->head);
         //결과에 대한 보고
         break;
         }
@@ -136,7 +137,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         if(_env_RR(Q, cpu, HeadList->head) < 0)
             return -1;
         printf(" RR sucess! \n");
-
+        showList(HeadList->head);
         //결과에 대한 보고
         break;
         }
@@ -153,7 +154,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         if(_env_MLFQ(rQ, cpu, HeadList->head) < 0)
             return -1;
         printf(" MLFQ sucess! \n");
-
+        showList(HeadList->head);
         //결과에 대한 보고
         break;
         }
@@ -173,6 +174,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
             if(_env_STRIDE(heap, cpu ,strideList->head) < 0)
                 return -1;
             printf("STRIDE sucess! \n");
+            showList(strideList->head);
         // //결과에 대한 보고
             break;
         }
@@ -364,10 +366,11 @@ _env_MLFQ
         }while(1);
         // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
         if(EndWorkload(Q, cpu_st, joblist)) break;
-        if(t == BOOST){
-            MLFQ_boosting(Q);
-            BOOST = BOOST *2;
-        }
+        //Boosting 하려면 주석을 해제하시면 됩니다.(default t =10)
+        // if(t == BOOST){
+        //     MLFQ_boosting(Q);
+        //     BOOST = BOOST *2;
+        // }
         
         //2 : 기존의 태스크 확인
 /*2 currtask에 스케쥴*/   
@@ -561,6 +564,21 @@ IsEmpty(sched_queue ** Q) {
             if(isEmpty(Q[2]))
                 return 1;
     return 0;
+}
+void showList(tasklist * head)
+{
+    int i;
+    float res =0;
+    float tur =0;
+    for(i=0; head != NULL; i++){
+        res += head->current->res_time;
+        tur += head->current->fin_time - head->arriv_T;
+        head = head->next_item;
+    }
+    res = res / i;
+    tur = tur / i;
+    printf(" avg response_t :  %.2f\n" ,res);
+    printf(" avg turnaround_t : %.2f\n",tur);
 }
 void cpu
 (cpu_state * state , task_strct * task, int timestamp)
