@@ -103,13 +103,6 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         exit(-111);
     int i;
     tasklist * tskl = HeadList->head;
-    for(i=0; tskl !=NULL &&i< 5; i++)
-    {
-        printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
-        tskl = tskl->next_item;
-    }
-
-    
     switch(sched_policy){
         case FCFS_SCHED:
         {//rQ 초기화
