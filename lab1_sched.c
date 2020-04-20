@@ -968,7 +968,7 @@ addMinHeap(task_strct  * task, heap_stride * heap)
 
 	if(addpoint > heap->maxsize)
 		return -1;
-	heap->arrOfTaskStrct[addpoint];
+	heap->arrOfTaskStrct[addpoint] = task;
 	heap->add_point = addpoint+1;
 	int i=addpoint;
 	while
