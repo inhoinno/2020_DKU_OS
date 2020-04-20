@@ -171,6 +171,8 @@ int init_workload(char ** scenario, task_strct * ret);
 /*
  * You need to Declare functions in  here
  */
+int 
+MLFQ_boosting(sched_queue *Q [] );
 int Run_workload
 (const char * scenario[] , int scenario_length ,int sched_policy);
 
@@ -186,8 +188,7 @@ int _env_MLFQ
 int _env_STRIDE
 (heap_stride * minheap, cpu_state * cpu , tasklist * joblist);
 
-int 
-MLFQ_boosting(sched_queue *Q [] );
+
 
 int 
 IsEmpty(sched_queue ** Q);
