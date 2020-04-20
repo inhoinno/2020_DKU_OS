@@ -431,6 +431,7 @@ _env_MLFQ
     return 1; 
 
 }
+
 int MFLQ_boosting(sched_queue * Q[])
 {
     task_strct * iter;
@@ -481,6 +482,8 @@ int MFLQ_boosting(sched_queue * Q[])
             Q[2]->front =NULL;
             Q[2]->rear =NULL;
         }
+
+        return 1;
     
 }
 int 
