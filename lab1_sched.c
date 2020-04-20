@@ -599,7 +599,7 @@ _env_STRIDE
                 addMinHeap(curr_task , minHeap);
             }
         }else{
-            printf("curr NULL \n");
+            printf(" end:%d\n",t);
             break;
         }
        
