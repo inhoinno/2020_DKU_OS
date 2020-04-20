@@ -876,7 +876,7 @@ set_STRIDE_task(task_strct * new)
 		write(STDERR_FILENO,buf,40);
 		exit(-1);
 	}
-	return 1;
+	
 	//1. set stride based on Common Multiple
 	// new->STRIDE  = CM / lottery?
 	//fairness 를 지켜주려면 같은 시간 동안 대부분의 job들이 비슷한 시간에 끝나도록 함
