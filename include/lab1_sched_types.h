@@ -171,8 +171,7 @@ int init_workload(char ** scenario, task_strct * ret);
 /*
  * You need to Declare functions in  here
  */
-int 
-MLFQ_boosting(sched_queue *Q [] );
+int MLFQ_boosting(sched_queue ** Q  );
 int Run_workload
 (const char * scenario[] , int scenario_length ,int sched_policy);
 

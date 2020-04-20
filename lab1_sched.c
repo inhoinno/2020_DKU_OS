@@ -432,7 +432,7 @@ _env_MLFQ
 
 }
 int 
-MFLQ_boosting(sched_queue * Q[])
+MLFQ_boosting(sched_queue * Q[])
 {
     task_strct * iter;
     int i;
