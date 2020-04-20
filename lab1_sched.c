@@ -572,7 +572,11 @@ void showList(tasklist * head)
     float tur =0;
     for(i=0; head != NULL; i++){
         res += head->current->res_time - head->arriv_T;
+        printf(" %c response_t :  %d\n", head->current->pid , head->current->res_time);
+
         tur += head->current->fin_time - head->arriv_T;
+        printf(" %c turnaround_t :  %d\n", head->current->pid, head->current->fin_time);
+
         head = head->next_item;
     }
     res = res / i;
