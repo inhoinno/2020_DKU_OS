@@ -167,6 +167,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
                 printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
                 tskl = tskl->next_item;
             }
+            printf("  ");
             cpu_state * cpu = init_cpu();
             heap_stride * heap = init_stride_heap(3); //heap 은 2^n -1 의 크기라 가정, 현재 1 -23-NIL
             if(_env_STRIDE(heap, cpu ,strideList->head) < 0)
@@ -599,7 +600,7 @@ _env_STRIDE
                 addMinHeap(curr_task , minHeap);
             }
         }else{
-            printf(" end:%d\n",t);
+            printf(" end:%d ",t);
             break;
         }
        
@@ -827,7 +828,7 @@ _init_STRIDE_ABC()
 		"B 0 6", //2
 		"C 0 12" //1
 	};
-	int ratio =3;
+	int ratio =1;
     int i;
 	for(i=0; i<3; i++){
         tasklist * item = (tasklist * )malloc(sizeof(tasklist));
@@ -839,7 +840,7 @@ _init_STRIDE_ABC()
         task_strct * task = (task_strct *)malloc(sizeof(task_strct));
         do_fork(scenario[i],task);
 		task->tickets = MAX_TICKETS / ratio;
-		ratio -=1;
+		ratio +=1;
         //task 생성, tickets : 150 100 50
         item->current = task;
         item->arriv_T = task->arr_time;
