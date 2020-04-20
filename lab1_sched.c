@@ -530,10 +530,63 @@ _env_MLFQ
 
 }
 */
-// int 
-// _env_STRIDE
-// ()
-// {}
+int 
+_env_STRIDE
+(STRIDE_Heap * minHeap, cpu_state * cpu_st, tasklist * joblist)
+{
+            set_STRIDE(new_task);            
+            addMinHeap(minHeap)
+            Stride_endWorkload();
+            schedule_STRIDE(minHeap);
+
+
+    //stride는 task strct상에 자신의 vruntime을 가지고 시작해야함
+    int t =0;
+    int i =0;
+    task_strct * prev_task =NULL;
+    task_strct * curr_task =NULL;
+    for(t=0; 1; t++){
+        //1. t에 따른 joblist에서 빼온다
+        do{
+            task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
+            if(new_task == NULL)
+                break;
+            else joblist = joblist->next_item;
+            //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
+            new_task->id=i++;
+            set_STRIDE(new_task);
+            //vruntime 을 설정하고(0) Heap에 넣는다
+            new_task->vruntime=0;
+            addMinHeap(new_task , minHeap);
+            new_task =NULL;
+        }while(1);
+        Stride_endWorkload();
+        
+        //2. schedule: 가장 작은 vruntime을 pop한다
+        //if(){
+            curr_task = schedule_STRIDE(minHeap);
+        //}
+           
+        //3. cpu에서 수행
+        if(curr_task != NULL){
+            cpu_STRIDE(curr_task);
+
+            if(cpu_st->cpu_state == CPU_EMPTY ){
+                //context_save()
+                curr_task->state == TASK_DONE;
+            }
+            else(){ 
+                //4, task->vruntime += task->vruntime
+                //5  Minheapfiy  
+                curr_task->vruntime += task->stride;
+                addMinHeap(new_task , minHeap);
+            }
+        }
+       
+
+    } 
+
+}
 // //#Endif Scheduling Source code.
 int 
 IsEmpty(sched_queue ** Q) {

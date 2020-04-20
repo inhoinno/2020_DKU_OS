@@ -32,7 +32,22 @@ typedef cpu_state * pcpu_st;
 typedef tasklist * ptasklist;
 
 // typedef io_context * poi_context;
+/*
+	minHeap 자료구조 설명부분
+	minHeap []
+	l : left왼쪽 자식
+	r : right오른쪽자식
+	ll : 루트의 왼쪽자식의 왼쪽자식(4)
+	..
 
+	[0] [1] [2] [3] [4] [5] [6]
+    root l   r  ll  lr
+*/
+typedef struct STR_Heap{
+	int maxsize;
+	int size;
+	task_strct * arrOfTaskStrct;
+}STRIDE_Heap;
 
 #define CPU_EMPTY 0 
 #define CPU_RUNNING 1
@@ -118,7 +133,7 @@ typedef struct Task_strct{
     sched_queue		*myrq;
 	int				sched_priority;
 	// some struct for I/OOperation
-	#ifdef MLFQ_SCHED 
+	//#ifdef MLFQ_SCHED 
 		//int 		_levels_of_feedback_queues;
 		//멀티레벨Queue 의 자료구조 -> 배열or 리스트
 		//struct sched_queue	*top;
@@ -126,10 +141,10 @@ typedef struct Task_strct{
 		//struct sched_queue		*where_is_my_Q;
 		//내 스케쥴Queue의 위치... 이게 필요할까?
 		//int 		pqi;//present-queue-index
-	#endif
+	//#endif
 
 	#ifdef STRIDE_SCHED
-		int 		ticket;
+		int 		vruntime;
 		int 		STRIDE; 
 		//or (usigned long) , (unsigned int)
 	#endif	 
