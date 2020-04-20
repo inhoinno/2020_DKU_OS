@@ -169,7 +169,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         // sched_queue * Q = init_sched(sched_policy,4);
             strideList = _init_STRIDE_ABC(); // A : 3 B :2 C :1
             tskl = strideList->head;
-            for(i=0; tskl !=NULL &&i< 5; i++)
+            for(i=0; tskl !=NULL &&i< 3; i++)
             {
                 printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
                 tskl = tskl->next_item;
