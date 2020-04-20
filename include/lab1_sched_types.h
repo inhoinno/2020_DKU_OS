@@ -94,7 +94,8 @@ typedef struct List{
 }List;
 
 typedef struct Tasklist{
-    int arriv_T;//arr time for current pointing task
+    int arriv_T;
+	//arr time for current pointing task
     task_strct * current;
     tasklist * next_item;
 
