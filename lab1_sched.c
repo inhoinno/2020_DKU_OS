@@ -431,8 +431,8 @@ _env_MLFQ
     return 1; 
 
 }
-
-int MFLQ_boosting(sched_queue * Q[])
+int 
+MFLQ_boosting(sched_queue * Q[])
 {
     task_strct * iter;
     int i;
@@ -442,50 +442,50 @@ int MFLQ_boosting(sched_queue * Q[])
     //task 자료구조 상에 myrq라는 필드가 있기 때문에 이것도 전부 바꿔주도록 한다.
     //boosting 되면 qtime이라는 현재 q에서의 시간이 불필요 하기 때문에 0으로 초기화 해도 문제 없을 것
 
-        if(!isEmpty(Q[1]))
-        {
-            iter = Q[1]->front;
-            if(isEmpty(Q[0])){
-                Q[0]->front = Q[1]->front;
-                Q[0]->rear =Q[1]->rear;
-            }
-            else{
-            Q[0]->rear->next =  Q[1]->front;
-            Q[1]->front->prev =Q[0]->rear;
-            Q[0]->rear = Q[1]->rear;
-            }
-            do{
-                iter->myrq = Q[0];
-                iter->qtime =0;
-                iter = iter->next;
-            }while(iter != Q[0]->rear);
-            Q[1]->front =NULL;
-            Q[1]->rear =NULL;
+    if(!isEmpty(Q[1]))
+    {
+        iter = Q[1]->front;
+        if(isEmpty(Q[0])){
+            Q[0]->front = Q[1]->front;
+            Q[0]->rear =Q[1]->rear;
         }
-        if(!isEmpty(Q[2]))
-        {
-            iter = Q[2]->front;
-            if(isEmpty(Q[0])){
-                Q[0]->front = Q[2]->front;
-                Q[0]->rear =Q[2]->rear;
-            }
-            else{
-                Q[0]->rear->next =  Q[2]->front;
-                Q[2]->front->prev =Q[0]->rear;
-                Q[0]->rear = Q[2]->rear;
-            }
-            do{
-                iter->myrq = Q[0];
-                iter->qtime =0;
-                iter = iter->next;
-            }while(iter != Q[0]->rear);
-            Q[2]->front =NULL;
-            Q[2]->rear =NULL;
+        else{
+        Q[0]->rear->next =  Q[1]->front;
+        Q[1]->front->prev =Q[0]->rear;
+        Q[0]->rear = Q[1]->rear;
         }
+        do{
+            iter->myrq = Q[0];
+            iter->qtime =0;
+            iter = iter->next;
+        }while(iter != Q[0]->rear);
+        Q[1]->front =NULL;
+        Q[1]->rear =NULL;
+    }
+    if(!isEmpty(Q[2]))
+    {
+        iter = Q[2]->front;
+        if(isEmpty(Q[0])){
+            Q[0]->front = Q[2]->front;
+            Q[0]->rear =Q[2]->rear;
+        }
+        else{
+            Q[0]->rear->next =  Q[2]->front;
+            Q[2]->front->prev =Q[0]->rear;
+            Q[0]->rear = Q[2]->rear;
+        }
+        do{
+            iter->myrq = Q[0];
+            iter->qtime =0;
+            iter = iter->next;
+        }while(iter != Q[0]->rear);
+        Q[2]->front =NULL;
+        Q[2]->rear =NULL;
+    }
 
-        return 1;
-    
+    return 1;
 }
+
 int 
 _env_STRIDE
 (heap_stride * minHeap, cpu_state * cpu_st, tasklist * joblist)
@@ -628,32 +628,7 @@ time_to_fork(char * workload [], int length, int time , int* index)
     // 같은시간 없으면 c:0 index =0;
 
 }
-// task_strct * 
-// do_fork
-// (char * workload[], int * step)
-// {   
-//     int index = *step; 
-//     printf("do fork() %d", index);
 
-//     task_strct * new = (task_strct *)malloc(sizeof(task_strct)); //메모리가 부족한경우 
-//     if(new ==NULL){ 
-//         write(STDERR_FILENO, "ERROR in malloc, process exit with state -1", 45);
-//         exit(-1);
-//     }
-//     char id = workload[index][0];
-//     new->pid = id;
-//     new->state= TASK_READY ;
-//     //new->sched_policy = sched_policy;
-//     new->total_time = atoi(&workload[index][6]);    //vulnerable
-//     new->arr_time =  atoi(&workload[index][3]);         //vulnerable
-//     //new->ticket
-//     //new->stride
-//     *step = index+1;
-//     //step은 다음 workload[][]라는 자료구조의 fork할 프로세스("str로 표현된")의 인덱스[step][]를 나타낸다
-//     printf("end_fork %d", index+1);
-//     return new;
-// }
-//start
 int
 init_tasklist
 (List * return_list,const char * scenario[], int wlength)

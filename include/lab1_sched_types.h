@@ -186,10 +186,12 @@ int _env_MLFQ
 int _env_STRIDE
 (heap_stride * minheap, cpu_state * cpu , tasklist * joblist);
 
-int MLFQ_boosting(sched_queue *Q[]);
+int 
+MLFQ_boosting(sched_queue *Q [] );
 
 int 
 IsEmpty(sched_queue ** Q);
+
 void cpu
 (cpu_state * cpu , task_strct * task,int timestamp);
 
