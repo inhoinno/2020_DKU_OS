@@ -460,7 +460,7 @@ MLFQ_boosting(sched_queue * Q[])
             iter->myrq = Q[0];
             iter->qtime =0;
             iter = iter->next;
-        }while(iter != Q[0]->rear || iter !=NULL);
+        }while(iter != Q[0]->rear && iter !=NULL);
         Q[1]->front =NULL;
         Q[1]->rear =NULL;
     }
@@ -480,7 +480,7 @@ MLFQ_boosting(sched_queue * Q[])
             iter->myrq = Q[0];
             iter->qtime =0;
             iter = iter->next;
-        }while(iter != Q[0]->rear || iter !=NULL);
+        }while(iter != Q[0]->rear && iter !=NULL);
         Q[2]->front =NULL;
         Q[2]->rear =NULL;
     }
