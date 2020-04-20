@@ -330,7 +330,7 @@ _env_MLFQ
     int time_slice;
     int t;
     int i=1;
-    
+    int BOOST =10;
     task_strct * prev_task =NULL;
     task_strct * curr_task =NULL;
 
@@ -364,6 +364,9 @@ _env_MLFQ
         }while(1);
         // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
         if(EndWorkload(Q, cpu_st, joblist)) break;
+        if(BOOST % t == 0)
+            MLFQ_boosting(Q);
+        
         //2 : 기존의 태스크 확인
 /*2 currtask에 스케쥴*/   
         if(!IsEmpty(Q)){
@@ -384,24 +387,7 @@ _env_MLFQ
             }
         }
         
-
-        // if(prev_task != NULL){
-        //     if(prev_task -> state != TASK_DONE){
-        //         //prev_task->priority += 1;
-        //         //RULE 4 based on current time spent in rq, lower level
-        //         if(prev_task ->qtime >= rq->time_slice || tempslice == time_slice){//!(prev_task는 0현재 큐에서의 시간을 다 썼다)
-        //             lower_priority(prev_task); prev_task->qtime=0;}
-        //         Enqueue(Q, prev_task); //enqueue to Q by task's priority
-        //         prev_task=NULL;
-        //     }else {
-        //         //prev_task is done11
-        //         prev_task =NULL;
-        //     }
-        // }
-        //RULE 5 booosting here 
-        //init bitmap because 1. prev task done 2 . boosting
         
-        //QIsEmpty, cpu_st->cpu_state == 0
 //3 curr task에 수행    
 /*3.1*/ //RULE 4 based on current time spent in rq, lower level
         
@@ -445,110 +431,58 @@ _env_MLFQ
     return 1; 
 
 }
-/*
-int 
-_env_MLFQ
-(sched_queue *Q [] , cpu_state * cpu_st, tasklist * joblist)
+int MFLQ_boosting(sched_queue * Q[])
 {
-    int tempslice=0;
-    int time_slice;
-    int t;
-    int i=1;
-    
-    task_strct * prev_task =NULL;
-    task_strct * curr_task =NULL;
+    task_strct * iter;
+    int i;
+    int topq = isEmpty(Q[0]);
+     // empty 1 : !empty 0
+    //Boosting은 다른거 없구 모든 Q를 최상위 Q로 옮겨 준다/
+    //task 자료구조 상에 myrq라는 필드가 있기 때문에 이것도 전부 바꿔주도록 한다.
+    //boosting 되면 qtime이라는 현재 q에서의 시간이 불필요 하기 때문에 0으로 초기화 해도 문제 없을 것
 
-    int * step = (int *)malloc(sizeof(int));
-    *step = 0;
-    sched_queue * rq= NULL;
-    printf("Q[0]->time_slice : %d \nQ[1]->time_slice %d\nQ[2]->time_slice: %d\n",Q[0]->time_slice,Q[1]->time_slice,Q[2]->time_slice);
-    rq=Q[0];
-
-    for(t =0; 1; t++){        
-        //흘러가는 시가안
-        ///1: 새로운 태스크를 확인      
-        //새로운 태스크가 왔을 때, curr_task 가 Running중이라면 
-        // 우선순위에 의해서 new task가 수행되어야 한다
-        //이때 curr_task를 저장해주고 Queue에 넣어주자
-  
-        do{
-            task_strct *new_task = _Module_fork(joblist,t); //프로세스 생성 Heap 에 생성
-            if(new_task == NULL)
-                break;
-            else joblist = joblist->next_item;
-            //index = update_bitmap(new_task, ); // 프로세스 생성에 대해 비트맵 갱신(사실은 Q맵)
-            new_task->id=i++;
-            new_task->sched_priority = HIGHEST_PRIORITY; // 프로세스의 우선순위 결정
-            Enqueue(Q,new_task); //해당 우선순위Q에 enqueue;
-            if(curr_task!=NULL)
-                if(curr_task->sched_priority > new_task->sched_priority){
-                    context_save(curr_task);//change ready
-                     prev_task = curr_task;
-                     curr_task =NULL;
-                     //그냥 q에 넣어주고 null로 만들까?**************
-                     //그냥 q에 넣어주고 null로 만들까?**************
-                     //그냥 q에 넣어주고 null로 만들까?**************
-
+        if(!isEmpty(Q[1]))
+        {
+            iter = Q[1]->front;
+            if(isEmpty(Q[0])){
+                Q[0]->front = Q[1]->front;
+                Q[0]->rear =Q[1]->rear;
             }
-            new_task =NULL;
-        }while(1);
-        // while문 안에서는 실제로 shell이 어느정도 하는 일을 한다
-
-        //2 : 기존의 태스크 확인
-/2/   if(prev_task != NULL){
-            if(prev_task -> state != TASK_DONE){
-                //prev_task->priority += 1;
-                //RULE 4 based on current time spent in rq, lower level
-                if(prev_task ->qtime >= rq->time_slice || tempslice == time_slice){//!(prev_task는 0현재 큐에서의 시간을 다 썼다)
-                    lower_priority(prev_task); prev_task->qtime=0;}
-                Enqueue(Q, prev_task); //enqueue to Q by task's priority
-                prev_task=NULL;
-            }else {
-                //prev_task is done11
-                prev_task =NULL;
+            else{
+            Q[0]->rear->next =  Q[1]->front;
+            Q[1]->front->prev =Q[0]->rear;
+            Q[0]->rear = Q[1]->rear;
             }
+            do{
+                iter->myrq = Q[0];
+                iter->qtime =0;
+                iter = iter->next;
+            }while(iter != Q[0]->rear);
+            Q[1]->front =NULL;
+            Q[1]->rear =NULL;
         }
-        //RULE 5 booosting here 
-        //init bitmap because 1. prev task done 2 . boosting
-        if(EndWorkload(Q, cpu_st, joblist)) break;
-        //QIsEmpty, cpu_st->cpu_state == 0
-//3     
-/*3.1/ //RULE 4 based on current time spent in rq, lower level
-        if( time_to_schedule(tempslice, cpu_st, rq) || isTopQueue(Q,rq) ){ 
-            //isTopQueue는 rq와 topQ의 priority 비교, rq가 더 높으면 1(true)return     
-            rq = (sched_queue *)SelectScheduler(Q);//think about bitmap hereb
-            curr_task=schedule(rq); 
-            if(curr_task == NULL){
-                write(STDERR_FILENO, "SCHEDULE : Q is empty dequeue error\n", 45);
-                exit(-1);
+        if(!isEmpty(Q[2]))
+        {
+            iter = Q[2]->front;
+            if(isEmpty(Q[0])){
+                Q[0]->front = Q[2]->front;
+                Q[0]->rear =Q[2]->rear;
             }
-            time_slice = rq->time_slice;
-            tempslice =0;
-        }
-
-    cpu(cpu_st, curr_task,t);tempslice++; //cpu 에서 task->time ++ 
-            
-        //3  현재 workload 구현상 for문을 사용해서, 새로운 task가 들어오는걸 t의 갱신으로 알기 때문에 여기에 구현
-        if((curr_task->spent_time == curr_task->total_time) || tempslice == time_slice){
-            context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
-            if(curr_task->state == TASK_DONE){
-                curr_task->fin_time=t;
-                tempslice=0;
+            else{
+                Q[0]->rear->next =  Q[2]->front;
+                Q[2]->front->prev =Q[0]->rear;
+                Q[0]->rear = Q[2]->rear;
             }
-            else
-                prev_task = curr_task;
-            curr_task = NULL; //현재 수행중인 Task가 없음
+            do{
+                iter->myrq = Q[0];
+                iter->qtime =0;
+                iter = iter->next;
+            }while(iter != Q[0]->rear);
+            Q[2]->front =NULL;
+            Q[2]->rear =NULL;
         }
-    }
     
-    if(Assert(Q,cpu_st) <0) 
-        return -1;
-    
-    //SUCCESS RR
-    return 1; 
-
 }
-*/
 int 
 _env_STRIDE
 (heap_stride * minHeap, cpu_state * cpu_st, tasklist * joblist)
