@@ -392,6 +392,7 @@ _env_MLFQ
         if(!IsEmpty(Q))
         {//Q가 모두 empty라면 task를 계속 수행함
             if((curr_task->spent_time == curr_task->total_time) || tempslice == time_slice){
+				//사실 ^ 여기 조건을 cpu->state == CPU_EMPTY로 해도컴터는  빼는 연산은 똑같이 수행되는거 아닌가 싶어서 안바꿈	
                 context_save(curr_task); //원래는 현재 수행한 위치까지 저장하는 거. 지금은 state도 갱신
                 if(curr_task->state == TASK_DONE){
                     curr_task->fin_time=t;
@@ -413,7 +414,7 @@ _env_MLFQ
                     }else
                         prev_task =NULL;//prev_task is done11
                 
-            }
+            	}
             }
         }
         }

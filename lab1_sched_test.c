@@ -98,7 +98,9 @@ E       2       8           E   4   4
     policy = ROUND_ROBIN_SCHED;
     test1(policy);
     policy = MLFQ_SCHED;
-    test1(policy);
+    if(test1(policy)>0)
+		printf("***********TEST 1 COMPLETE! *******\n");
+
 
     printf("\n************ test2 ************\n");
     policy= FCFS_SCHED;
@@ -106,5 +108,6 @@ E       2       8           E   4   4
     policy = ROUND_ROBIN_SCHED;
     test2(policy);    
     policy = MLFQ_SCHED;
-    test2(policy);    
+    if(test2(policy)>0)   
+		printf("*********TEST 2 COMPLETE ! **********\n");
 }
