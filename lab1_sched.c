@@ -439,6 +439,7 @@ MLFQ_boosting(sched_queue * Q[])
     task_strct * iter;
     int i;
     int topq = isEmpty(Q[0]);
+    printf("<b>");
      // empty 1 : !empty 0
     //Boosting은 다른거 없구 모든 Q를 최상위 Q로 옮겨 준다/
     //task 자료구조 상에 myrq라는 필드가 있기 때문에 이것도 전부 바꿔주도록 한다.
