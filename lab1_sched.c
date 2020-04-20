@@ -571,7 +571,7 @@ void showList(tasklist * head)
     float res =0;
     float tur =0;
     for(i=0; head != NULL; i++){
-        res += head->current->res_time;
+        res += head->current->res_time - head->arriv_T;
         tur += head->current->fin_time - head->arriv_T;
         head = head->next_item;
     }
