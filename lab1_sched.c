@@ -113,6 +113,11 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
     switch(sched_policy){
         case FCFS_SCHED:
         {//rQ 초기화
+        for(i=0; tskl !=NULL &&i< 5; i++)
+        {
+            printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
+            tskl = tskl->next_item;
+        }
         Q = init_sched(sched_policy,0);
         cpu = init_cpu();
         printf("  ");
@@ -125,6 +130,11 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         }
         case ROUND_ROBIN_SCHED:
         {//rQ 초기화
+        for(i=0; tskl !=NULL &&i< 5; i++)
+        {
+            printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
+            tskl = tskl->next_item;
+        }
         int slice =1; //#define timeslice
         //scanf_s("%d", slice , sizeof(slice));
         Q = init_sched(sched_policy,slice);
@@ -140,6 +150,11 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         case MLFQ_SCHED:
         {
         //rQ 초기화
+        for(i=0; tskl !=NULL &&i< 5; i++)
+        {
+            printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
+            tskl = tskl->next_item;
+        }
         sched_queue ** rQ = init_bitmap();
         cpu = init_cpu();
         if(_env_MLFQ(rQ, cpu, HeadList->head) < 0)
@@ -153,11 +168,17 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
         {//rQ 초기화
         // sched_queue * Q = init_sched(sched_policy,4);
             strideList = _init_STRIDE_ABC(); // A : 3 B :2 C :1
+            tskl = strideList->head;
+            for(i=0; tskl !=NULL &&i< 5; i++)
+            {
+                printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
+                tskl = tskl->next_item;
+            }
             cpu_state * cpu = init_cpu();
             heap_stride * heap = init_stride_heap(3); //heap 은 2^n -1 의 크기라 가정, 현재 1 -23-NIL
             if(_env_STRIDE(heap, cpu ,strideList->head) < 0)
                 return -1;
-            printf("STRDIE sucess! \n ");
+            printf("STRIDE sucess! \n");
         // //결과에 대한 보고
             break;
         }
@@ -975,8 +996,8 @@ isheapEmpty(heap_stride * heap)
     task_strct ** arr = heap->arrOfTaskStrct;
     int i;
     for(i=0; i<max_size; i++)
-        if(arr[i] !=NULL)
-            return -1;
+        if(arr[i] != NULL)
+            return 0;
     
     return 1;
 
