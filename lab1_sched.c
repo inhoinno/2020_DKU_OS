@@ -556,7 +556,7 @@ _env_STRIDE
     //각각의 비율을 3:2:1 로 미리 가정해 보았다
     //stride는 task strct상에 자신의 vruntime을 가지고 시작해야함
     int t =0;
-    int i =0;
+    int i =1;
     //task_strct * prev_task =NULL;
     task_strct * curr_task =NULL;
     for(t=0; 1; t++){
