@@ -28,7 +28,7 @@
 
 #include "include/lab1_sched_types.h"
 
-#define _RR_TIME_SLICE 2
+#define _RR_TIME_SLICE 1
 #define _MAX_PROCESS_LIMIT 8
 #define _MAX_WORKLOAD_TIME 32
 int footprint [_MAX_PROCESS_LIMIT][_MAX_WORKLOAD_TIME];
@@ -82,14 +82,15 @@ int Assert(sched_queue * Q[], cpu_state *);
 // int init_workload(char * scenario[] , task_strct * ret){
     
 // }
-int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy){
+int 
+Run_workload
+(const char * scenario[] , int scenario_length ,int sched_policy){
     //arg1 시나리오 자료구조
     //arg2 스케쥴링 정책
     //struct sched_queue * Q [] = init_bitmap(sched_policy);
 
     //초기화 부분, 컴퓨터를 부팅했을때 운영체제가 테이블 초기화 하는 부분이라고 생각
     //1 cpu초기화 , runQ초기화<-sched policy 이용, 비트맵(Q위치) 초기화
-    
     sched_queue * Q= malloc(sizeof(sched_queue)); 
     cpu_state * cpu =malloc(sizeof(cpu_state));
     List * HeadList =malloc(sizeof(List));
@@ -129,7 +130,7 @@ int Run_workload(const char * scenario[] , int scenario_length ,int sched_policy
             printf("tasklist [%d] : %c %d %d\n",i+1,tskl->current->pid ,tskl->arriv_T, tskl->current->total_time);        
             tskl = tskl->next_item;
         }
-        int slice =1; //#define timeslice
+        int slice =_RR_TIME_SLICE; //#define timeslice
         //scanf_s("%d", slice , sizeof(slice));
         Q = init_sched(sched_policy,slice);
         cpu = init_cpu();printf("  ");

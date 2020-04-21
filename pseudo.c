@@ -100,8 +100,29 @@ _env_MLFQ
 
 }
 
+t=0;
+while( t <7){
+    //1. 프로세스 종료
+    //.remain = 수행시간 .protime = 프로세스 수행할 시간
+        if (pro[k].remain >= pro[k].pro_time)
+            //end process
+            //해당 인덱스로 k가 가지 말아야함
+        else 
+            //아직 종료 x
+            pro[k].remain +=1;
+    
+    //2. 찍기
+    check[pro[k].id][t]
 
+    //3. 최소 찾기
+    pro[k].pass_value += pro[k].stride
+    for(){
+        //최소 pass_value 를 찾고 그 인덱스를 k에 저장
+        //k 에 인덱스 정보
+    }
+    t++;
 
+}
 
 
 
