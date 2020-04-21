@@ -228,7 +228,6 @@ _env_FCFS
         if(curr_task ==NULL)    
             curr_task =(task_strct *)schedule(rq);
         else if (curr_task->state == TASK_DONE){
-            curr_task->fin_time =t;
             curr_task =(task_strct *)schedule(rq);
         }
         if(curr_task !=NULL){
@@ -237,6 +236,8 @@ _env_FCFS
                 //context save
                 curr_task->state = TASK_DONE;
                 cpu_st->cpu_state =CPU_EMPTY;
+                curr_task->fin_time =t;
+
             }
         }
         //else//time 만 소비...
