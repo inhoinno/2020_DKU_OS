@@ -227,6 +227,7 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
         pre = tree->root;//tree->root?
     }else{
         tree->root = new_node;
+        pthread_mutex_unlock(&mutex_Tree);
         return LAB2_SUCCESS;
     }
     while ( leaf != NULL ){
