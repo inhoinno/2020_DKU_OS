@@ -160,10 +160,10 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
         leaf = tree->root;
         pre = leaf;
     }else{
-        pthread_mutex_lock(&(tree->root->mutex));
+        pthread_mutex_lock(&(new_node->mutex));
         if (tree->root == NULL)
             tree->root = new_node;
-        pthread_mutex_unlock(&(tree->root->mutex));
+        pthread_mutex_unlock(&(new_node->mutex));
         return LAB2_SUCCESS;
     }
     //#### I. Traverse
