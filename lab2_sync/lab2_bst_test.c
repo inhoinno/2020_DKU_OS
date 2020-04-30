@@ -82,11 +82,13 @@ void* thread_job_insert(void *arg){
 
     thread_arg *th_arg = (thread_arg *)arg;
     lab2_tree *tree = th_arg->tree;
+    
     int is_sync = th_arg->is_sync;
     int *data = th_arg->data_set;
     int start = th_arg->start, end = th_arg->end;
     int i;
 
+    pthread_mutex_init(&mutex_Tree,NULL);//for coarse grain 
     for (i=start ; i < end ; i++) {               
         lab2_node* node = lab2_node_create(data[i]);
         if(is_sync == LAB2_TYPE_FINEGRAINED)

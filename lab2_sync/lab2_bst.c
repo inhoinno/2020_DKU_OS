@@ -22,7 +22,8 @@
 #define LEFT 0
 #define RIGHT 1
 
-pthread_mutex_t mutex_Tree = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_Tree = PTHREAD_MUTEX_INITIALIZER; //for coarse grain
+
 // INSERT 가 생산자고, DELETE가 소비자야
 // 생산 할 때는 Pre -> child 로 이어줘
 // 소비 할 때는 Suc -> child를 떼어서 rm노드와 바꿔
@@ -214,19 +215,18 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     // You need to implement lab2_node_insert_cg function.
     /* Acquiring Lock */
     
-    /* critical section START*/
     struct lab2_node * leaf =NULL;
     struct lab2_node * pre =NULL;
     int cond =1; // volatile?
     int pKey;
+    pthread_mutex_lock(&mutex_Tree);
+    /* critical section START*/
+
     if (tree->root != NULL){        
-        pthread_mutex_lock(&(tree->root->mutex));
         leaf = tree->root;
         pre = tree->root;//tree->root?
     }else{
-        pthread_mutex_lock(&(tree->root->mutex));
         tree->root = new_node;
-        pthread_mutex_unlock(&(tree->root->mutex));
         return LAB2_SUCCESS;
     }
     while ( leaf != NULL ){
@@ -242,9 +242,10 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     else 
         pre->left = new_node;
     
-    pthread_mutex_unlock(&(tree->root->mutex));
     /* critical section END*/
     /* Release lock  */
+    pthread_mutex_unlock(&mutex_Tree);
+
     return LAB2_SUCCESS;
     
 }
