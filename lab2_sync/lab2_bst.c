@@ -105,15 +105,15 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
     }
     while ( leaf != NULL ){
         pre = leaf;
-        if(leaf->key < new_node->key)
-            leaf = leaf->left;
-        else 
+        if(leaf->key <= new_node->key)
             leaf = leaf->right;
+        else 
+            leaf = leaf->left;
     }    
-    if(pre->key < new_node->key)
-        pre->left = new_node;
-    else 
+    if(pre->key <= new_node->key)
         pre->right = new_node;
+    else 
+        pre->left = new_node;
         
     
     return LAB2_SUCCESS;
@@ -229,16 +229,16 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     }
     while ( leaf != NULL ){
         pre = leaf;
-        if(leaf->key < new_node->key)
-            leaf = leaf->left;
-        else 
+        if(leaf->key <= new_node->key)
             leaf = leaf->right;
+        else 
+            leaf = leaf->left;
     }
 
-    if(pre->key < new_node->key)
-        pre->left = new_node;
-    else 
+    if(pre->key <= new_node->key)
         pre->right = new_node;
+    else 
+        pre->left = new_node;
     
     /* critical section END*/
     /* Release lock  */
