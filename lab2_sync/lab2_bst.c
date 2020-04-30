@@ -98,7 +98,11 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
     // You need to implement lab2_node_insert function.
     struct lab2_node * leaf = tree->root;
     struct lab2_node * pre =leaf;
-
+    if(tree->root ==NULL)
+    {
+        tree->root = new_node;
+        return LAB2_SUCCESS;
+    }
     while ( leaf != NULL ){
         pre = leaf;
         if(leaf->key < new_node->key)
