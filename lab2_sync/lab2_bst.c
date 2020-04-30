@@ -219,12 +219,14 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     struct lab2_node * pre =NULL;
     int cond =1; // volatile?
     int pKey;
-    pthread_mutex_lock(&mutex_Tree);
-    if (tree->root != NULL){
+    if (tree->root != NULL){        
+        pthread_mutex_lock(&(tree->root->mutex));
         leaf = tree->root;
         pre = tree->root;//tree->root?
     }else{
+        pthread_mutex_lock(&(tree->root->mutex));
         tree->root = new_node;
+        pthread_mutex_unlock(&(tree->root->mutex));
         return LAB2_SUCCESS;
     }
     while ( leaf != NULL ){
@@ -240,9 +242,9 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     else 
         pre->left = new_node;
     
+    pthread_mutex_unlock(&(tree->root->mutex));
     /* critical section END*/
     /* Release lock  */
-    pthread_mutex_unlock(&mutex_Tree);
     return LAB2_SUCCESS;
     
 }
