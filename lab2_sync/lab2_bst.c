@@ -80,7 +80,7 @@ lab2_tree *lab2_tree_create() {
 lab2_node * lab2_node_create(int key) {
     // You need to implement lab2_node_create function.
     lab2_node * baby = (lab2_node *) malloc( sizeof(lab2_node));
-    baby->mutex = PTHREAD_MUTEX_INITIALIZER;
+    pthread_mutex_init(&(baby->mutex) ,NULL);
     baby->key = key;
     baby->left =NULL; baby->right =NULL;
     return baby ;
