@@ -213,13 +213,13 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
 int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     // You need to implement lab2_node_insert_cg function.
     /* Acquiring Lock */
-    pthread_mutex_lock(&mutex_Tree);
+    
     /* critical section START*/
     struct lab2_node * leaf =NULL;
     struct lab2_node * pre =NULL;
     int cond =1; // volatile?
     int pKey;
-
+    pthread_mutex_lock(&mutex_Tree);
     if (tree->root != NULL){
         leaf = tree->root;
         pre = tree->root;//tree->root?
