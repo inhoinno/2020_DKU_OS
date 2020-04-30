@@ -155,10 +155,10 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
         leaf = tree->root;
         pre = leaf;
     }else{
-        pthread_mutex_lock(tree->root->mutex);
+        pthread_mutex_lock(&(tree->root->mutex));
         if (tree->root == NULL)
             tree->root = new_node;
-        pthread_mutex_unlock(tree->root->mutex);
+        pthread_mutex_unlock(&(tree->root->mutex));
         return LAB2_SUCCESS;
     }
     //#### I. Traverse
@@ -194,7 +194,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
             pre->right = new_node;
     }
         
-    pthread_mutex_unlock(pre->mutex);//## UNLOCK ##
+    pthread_mutex_unlock(&(pre->mutex));//## UNLOCK ##
     return LAB2_SUCCESS;
 }
 
@@ -393,11 +393,11 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         successor = remove->right->left; //successor 위치    
         pthread_mutex_lock(&successor->mutex); // ...how unlock it?
         while(successor->left != NULL){
-            pthread_mutex_lock(successor->mutex);
+            pthread_mutex_lock(&(successor->mutex));
             psuccessor = successor;
             successor = successor->left;
         }
-        pthread_mutex_lock(successor->mutex);
+        pthread_mutex_lock(&(successor->mutex));
         //successor = remove's successor
         remove->key = successor->key;
         psuccessor->left = successor->right;
