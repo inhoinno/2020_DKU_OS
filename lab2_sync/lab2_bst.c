@@ -35,26 +35,25 @@ pthread_mutex_t mutex_Tree = PTHREAD_MUTEX_INITIALIZER; //for coarse grain
  *  @param lab2_tree *tree  : bst to print in-order. 
  *  @return                 : status (success or fail)
  */
-int lab2_node_print_inorder(lab2_tree *tree) {
+int lab2_node_print_inorder(lab2_tree *tree)
+{
     // You need to implement lab2_node_print_inorder function.
-    lab2_node * node = tree->root;
-    if(lab2_node_print(node)<0)
+    lab2_node *node = tree->root;
+    if (lab2_node_print(node) < 0)
         return LAB2_ERROR;
     return LAB2_SUCCESS;
-
 }
-int lab2_node_print(lab2_node * node){
-    if(node==NULL)
+int lab2_node_print(lab2_node *node)
+{
+    if (node == NULL)
         return LAB2_ERROR; //node is NULL
-    if(node->left !=NULL)
+    if (node->left != NULL)
         lab2_node_print(node->left);
     printf("%d ", node->key);
-    if(node->right !=NULL)
+    if (node->right != NULL)
         lab2_node_print(node->right);
     return LAB2_SUCCESS;
 }
-
-
 
 /*
  * TODO
@@ -63,9 +62,10 @@ int lab2_node_print(lab2_node * node){
  * 
  *  @return                 : bst which you created in this function.
  */
-lab2_tree *lab2_tree_create() {
+lab2_tree *lab2_tree_create()
+{
     // You need to implement lab2_tree_create function.
-    lab2_tree * tree = (lab2_tree *)malloc(sizeof(lab2_tree));
+    lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree));
     tree->root = NULL;
     return tree;
 }
@@ -78,13 +78,15 @@ lab2_tree *lab2_tree_create() {
  *  @param int key          : bst node's key to creates
  *  @return                 : bst node which you created in this function.
  */
-lab2_node * lab2_node_create(int key) {
+lab2_node *lab2_node_create(int key)
+{
     // You need to implement lab2_node_create function.
-    lab2_node * baby = (lab2_node *) malloc( sizeof(lab2_node));
-    pthread_mutex_init(&(baby->mutex) ,NULL);
+    lab2_node *baby = (lab2_node *)malloc(sizeof(lab2_node));
+    pthread_mutex_init(&(baby->mutex), NULL);
     baby->key = key;
-    baby->left =NULL; baby->right =NULL;
-    return baby ;
+    baby->left = NULL;
+    baby->right = NULL;
+    return baby;
 }
 
 /* 
@@ -95,28 +97,29 @@ lab2_node * lab2_node_create(int key) {
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                 : satus (success or fail)
  */
-int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
+int lab2_node_insert(lab2_tree *tree, lab2_node *new_node)
+{
     // You need to implement lab2_node_insert function.
-    struct lab2_node * leaf = tree->root;
-    struct lab2_node * pre =leaf;
-    if(tree->root ==NULL)
+    struct lab2_node *leaf = tree->root;
+    struct lab2_node *pre = leaf;
+    if (tree->root == NULL)
     {
         tree->root = new_node;
         return LAB2_SUCCESS;
     }
-    while ( leaf != NULL ){
+    while (leaf != NULL)
+    {
         pre = leaf;
-        if(leaf->key <= new_node->key)
+        if (leaf->key <= new_node->key)
             leaf = leaf->right;
-        else 
+        else
             leaf = leaf->left;
-    }    
-    if(pre->key <= new_node->key)
+    }
+    if (pre->key <= new_node->key)
         pre->right = new_node;
-    else 
+    else
         pre->left = new_node;
-        
-    
+
     return LAB2_SUCCESS;
 }
 
@@ -128,9 +131,10 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                     : status (success or fail)
  */
-int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
-      // You need to implement lab2_node_insert_fg function.
-        /*
+int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
+{
+    // You need to implement lab2_node_insert_fg function.
+    /*
     root = tree->root;
     pre =root;
     cond =1
@@ -146,60 +150,75 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
             return true;
     
     */
-       // You need to implement lab2_node_insert_cg function.
-    
+    // You need to implement lab2_node_insert_cg function.
+
     //hand-over-hand lock mechanism
-    struct lab2_node * leaf = tree->root;
-    struct lab2_node * pleaf = tree->root;
-    struct lab2_node * pre = NULL;
-    int cond =1; // volatile?
+    struct lab2_node *leaf = tree->root;
+    struct lab2_node *pleaf = tree->root;
+    struct lab2_node *pre = NULL;
+    int cond = 1; // volatile?
     int pKey;
 
     //#### 0. Initialize
-    if (tree->root != NULL){
+    if (tree->root != NULL)
+    {
         leaf = tree->root;
         pre = leaf;
-    }else{
-        pthread_mutex_lock(&(new_node->mutex));
-        if (tree->root == NULL)
+    }
+    else
+    {
+        pthread_mutex_lock(&(mutex_Tree));
+        if (tree->root == NULL){
             tree->root = new_node;
-        pthread_mutex_unlock(&(new_node->mutex));
-        return LAB2_SUCCESS;
+            pthread_mutex_unlock(&(mutex_Tree));
+            return LAB2_SUCCESS;            
+        }
+        else//then tree root changed already, goto loop 
+        {
+            leaf = tree->root;
+            pre = leaf;
+            /* code */
+            pthread_mutex_unlock(&(mutex_Tree));
+        }
+
     }
     //#### I. Traverse
     pthread_mutex_lock(&pre->mutex);
     leaf = (pre->key < new_node->key) ? pre->right : pre->left;
-    while ( leaf != NULL ){
-        if(pthread_mutex_lock(&leaf->mutex) != 0)
+    while (leaf != NULL)
+    {
+        if (pthread_mutex_lock(&leaf->mutex) != 0)
             break; //if leaf deleted, lock returns fail
         pre = leaf;
 
-        if(leaf->key < new_node->key)
+        if (leaf->key < new_node->key)
             leaf = leaf->left;
-        else 
+        else
             leaf = leaf->right;
     }
     // After All traverse done, tree has lock from root to 'pre'
     leaf = tree->root;
-    while(leaf != pre){
+    while (leaf != pre)
+    {
         pleaf = leaf;
-        leaf = (leaf->key < new_node->key)? leaf->right : leaf->left;
+        leaf = (leaf->key < new_node->key) ? leaf->right : leaf->left; //leaf null?
         pthread_mutex_unlock(&pleaf->mutex);
     }
     //####  END I. Traverse & Lock/unLock
     //"Now , It has locked only "pre" Node."
-    //#### II. Execution 
+    //#### II. Execution
     pKey = pre->key;
-    if(pre != NULL && (pKey == pre->key)){ 
-        //condition : 1. insert 2. simple deletion 3.complex deletion 
+    if (pre != NULL && (pKey == pre->key))
+    {
+        //condition : 1. insert 2. simple deletion 3.complex deletion
         //all cond true mean Insetion/deletion is executing in other subtree.
-        if(pre->key > new_node->key)
+        if (pre->key > new_node->key)
             pre->left = new_node;
-        else 
+        else
             pre->right = new_node;
     }
-        
-    pthread_mutex_unlock(&(pre->mutex));//## UNLOCK ##
+
+    pthread_mutex_unlock(&(pre->mutex)); //## UNLOCK ##
     return LAB2_SUCCESS;
 }
 
@@ -211,44 +230,54 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                     : status (success or fail)
  */
-int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
+int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node)
+{
     // You need to implement lab2_node_insert_cg function.
     /* Acquiring Lock */
-    
-    struct lab2_node * leaf =NULL;
-    struct lab2_node * pre =NULL;
-    int cond =1; // volatile?
+
+    struct lab2_node *leaf = NULL;
+    struct lab2_node *pre = NULL;
+    int cond = 1; // volatile?
     int pKey;
     pthread_mutex_lock(&mutex_Tree);
     /* critical section START*/
 
-    if (tree->root != NULL){        
+    if (tree->root != NULL)
+    {
         leaf = tree->root;
-        pre = tree->root;//tree->root?
-    }else{
-        tree->root = new_node;
-        pthread_mutex_unlock(&mutex_Tree);
-        return LAB2_SUCCESS;
+        pre = tree->root; //tree->root?
     }
-    while ( leaf != NULL ){
+    else
+    {
+        if(tree->root != NULL)
+        {
+            leaf = tree->root;
+            pre = tree->root;
+        }else{
+            tree->root = new_node;
+            pthread_mutex_unlock(&mutex_Tree);        
+            return LAB2_SUCCESS;
+        }
+    }
+    while (leaf != NULL)
+    {
         pre = leaf;
-        if(leaf->key <= new_node->key)
+        if (leaf->key <= new_node->key)
             leaf = leaf->right;
-        else 
+        else
             leaf = leaf->left;
     }
 
-    if(pre->key <= new_node->key)
+    if (pre->key <= new_node->key)
         pre->right = new_node;
-    else 
+    else
         pre->left = new_node;
-    
+
     /* critical section END*/
     /* Release lock  */
     pthread_mutex_unlock(&mutex_Tree);
 
     return LAB2_SUCCESS;
-    
 }
 
 /* 
@@ -259,26 +288,27 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
  *  @param int key          : key value that you want to delete. 
  *  @return                 : status (success or fail)
  */
-int lab2_node_remove(lab2_tree *tree, int key) {
+int lab2_node_remove(lab2_tree *tree, int key)
+{
     // You need to implement lab2_node_remove function.
     /*
     //0 . Init
     //I . Traverse
     //II. Execute from "remove"
     */
-    lab2_node *remove = tree->root ;
+    lab2_node *remove = tree->root;
     lab2_node *pre = tree->root;
-    lab2_node *successor ;
-    lab2_node *psuccessor ;
-    lab2_node *child ;
-    int state=0; //FALSE
+    lab2_node *successor;
+    lab2_node *psuccessor;
+    lab2_node *child;
+    int state = 0; //FALSE
 
-    while(remove != NULL)  
+    while (remove != NULL)
     {
         pre = remove;
-        if(remove->key == key)
+        if (remove->key == key)
             break;
-        else if(remove->key < key)
+        else if (remove->key < key)
             remove = remove->right;
         else
             remove = remove->left;
@@ -287,41 +317,45 @@ int lab2_node_remove(lab2_tree *tree, int key) {
         1. simple deletion
         2. complex deletion
     */
-    if(remove !=NULL){
+    if (remove != NULL)
+    {
         //state = true
-        
-        //else if remove has a two child  
-        if ( remove->left !=NULL && remove->right !=NULL ){
-            //1. find successor 
+
+        //else if remove has a two child
+        if (remove->left != NULL && remove->right != NULL)
+        {
+            //1. find successor
             successor = remove->right;
             psuccessor = remove;
-            while(successor->left != NULL) 
-            {psuccessor = successor ; successor = successor-> left;}
-            //2. change value with successor 
+            while (successor->left != NULL)
+            {
+                psuccessor = successor;
+                successor = successor->left;
+            }
+            //2. change value with successor
             remove->key = successor->key;
-            //delete successor 
-            psuccessor-> left = successor->right;
+            //delete successor
+            psuccessor->left = successor->right;
             free(successor);
-            successor =NULL;
+            successor = NULL;
             state = 1; //TRUE
-
         }
         //if remove has a child or no child
-        else if(remove->left == NULL || remove->right == NULL){
+        else if (remove->left == NULL || remove->right == NULL)
+        {
             child = (remove->right == NULL) ? remove->left : remove->right;
-            if(pre->left->key == remove->key)
+            if (pre->left->key == remove->key)
                 pre->left = child;
-            else if(pre->right->key == remove->key)
+            else if (pre->right->key == remove->key)
                 pre->right = child;
-        free(remove);
-        remove = NULL;
-        state = 1; //TRUE
+            free(remove);
+            remove = NULL;
+            state = 1; //TRUE
         }
     }
     else
-        state = 0; //"No such Key"
+        state = 0;                              //"No such Key"
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
-
 }
 
 /* 
@@ -332,75 +366,83 @@ int lab2_node_remove(lab2_tree *tree, int key) {
  *  @param int key          : key value that you want to delete. 
  *  @return                 : status (success or fail)
  */
-int lab2_node_remove_fg(lab2_tree *tree, int key) {
+int lab2_node_remove_fg(lab2_tree *tree, int key)
+{
     // You need to implement lab2_node_remove_fg function.
     //1 lock/unlock in find successor
     //2 lock/unlock in change its value
-            // You need to implement lab2_node_remove_cg function.
+    // You need to implement lab2_node_remove_cg function.
     //#### 0. Initialize
-    
-    lab2_node * leaf;
-    lab2_node * pleaf;
-    lab2_node * remove;
-    lab2_node * premove;
-    lab2_node * successor;
-    lab2_node * psuccessor;
-    int child[2] = {0,0};
+
+    lab2_node *leaf;
+    lab2_node *pleaf;
+    lab2_node *remove;
+    lab2_node *premove;
+    lab2_node *successor;
+    lab2_node *psuccessor;
+    int child[2] = {0, 0};
     //int childchilde[2] = {0,};
     //define LEFT 0 RIGHT 1
 
-    
-    if (tree->root != NULL){
+    if (tree->root != NULL)
+    {
         leaf = tree->root;
         remove = leaf;
-    }else
+    }
+    else
         return LAB2_ERROR; //tree is Empty
-    
+
     //#### I. Traverse
     pthread_mutex_lock(&remove->mutex);
     leaf = (remove->key < key) ? remove->right : remove->left;
-    while ( leaf != NULL ){
-        if(pthread_mutex_lock(&leaf->mutex) != 0)
+    while (leaf != NULL)
+    {
+        if (pthread_mutex_lock(&leaf->mutex) != 0)
             break; //if leaf deleted, lock returns fail
         premove = remove;
-        remove = leaf;       
+        remove = leaf;
         if (leaf->key == key)
             break;
-        else if(leaf->key < key)
+        else if (leaf->key < key)
             leaf = leaf->right;
-        else 
+        else
             leaf = leaf->left;
     }
     // After All traverse done, tree has lock from root to 'pre'
     leaf = tree->root;
-    while(leaf != premove){
+    while (leaf != premove)
+    {
         pleaf = leaf;
-        leaf = (leaf->key < key)? leaf->right : leaf->left;
+        leaf = (leaf->key < key) ? leaf->right : leaf->left;
         pthread_mutex_unlock(&pleaf->mutex);
     }
     /*!!!! Critical Section !!!!*/
     //####  END I. Traverse & Lock/unLock
     //"And now, remove node locked"
     //#### II. Execution
-    //"4월29일, 
+    //"4월29일,
     //remove fg 는 4개의노드 premove, remove, remove->l remove->r 을 Lock 해주어야 한다
     // if(premove != NULL)
     //     pthread_mutex_lock(&premove->mutex);//dead
-    if(remove->left != NULL)  {
+    if (remove->left != NULL)
+    {
         pthread_mutex_lock(&remove->left->mutex);
         child[LEFT] = 1;
     }
-    if(remove->right != NULL){
+    if (remove->right != NULL)
+    {
         pthread_mutex_lock(&remove->right->mutex);
         child[RIGHT] = 1;
     }
     //if(remove->key == key)    {
-        //Complex Deletion
-    if(child[LEFT] & child[RIGHT]){ //it has both child 
-        psuccessor = remove->right; //successor 부모
-        successor = remove->right->left; //successor 위치    
+    //Complex Deletion
+    if (child[LEFT] & child[RIGHT])
+    {                                          //it has both child
+        psuccessor = remove->right;            //successor 부모
+        successor = remove->right->left;       //successor 위치
         pthread_mutex_lock(&successor->mutex); // ...how unlock it?
-        while(successor->left != NULL){
+        while (successor->left != NULL)
+        {
             pthread_mutex_lock(&(successor->mutex));
             psuccessor = successor;
             successor = successor->left;
@@ -413,7 +455,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         free(successor);
         successor = NULL;
         psuccessor = remove->right->left;
-        while(psuccessor != NULL){
+        while (psuccessor != NULL)
+        {
             pthread_mutex_unlock(&(psuccessor->mutex));
             psuccessor = psuccessor->left;
         }
@@ -422,24 +465,33 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         pthread_mutex_unlock(&(remove->mutex));
     }
     //Simple Deletion
-    else if(child[LEFT]){
-        if(premove->left == remove) premove->left = remove->left;
-        else premove->right = remove->left;
-        free(remove); remove =NULL;
+    else if (child[LEFT])
+    {
+        if (premove->left == remove)
+            premove->left = remove->left;
+        else
+            premove->right = remove->left;
+        free(remove);
+        remove = NULL;
         pthread_mutex_unlock(&(premove->left->mutex));
-
-    }else{//child[RIGHT] & No child;
-        if(premove->left == remove) premove->left = remove->right;
-        else premove->right = remove->right;
-        free(remove); remove = NULL;
+    }
+    else
+    { //child[RIGHT] & No child;
+        if (premove->left == remove)
+            premove->left = remove->right;
+        else
+            premove->right = remove->right;
+        free(remove);
+        remove = NULL;
         pthread_mutex_unlock(&(premove->right->mutex));
     }
-    if(premove !=NULL) pthread_mutex_unlock(&(premove->mutex));
-    else return LAB2_ERROR;
+    if (premove != NULL)
+        pthread_mutex_unlock(&(premove->mutex));
+    else
+        return LAB2_ERROR;
     /*!!!! Critical Section !!!!*/
     return LAB2_SUCCESS;
 }
-
 
 /* 
  * TODO
@@ -449,23 +501,24 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @param int key          : key value that you want to delete. 
  *  @return                 : status (success or fail)
  */
-int lab2_node_remove_cg(lab2_tree *tree, int key) {
+int lab2_node_remove_cg(lab2_tree *tree, int key)
+{
     // You need to implement lab2_node_remove_cg function.
-    //#1 traverse 
+    //#1 traverse
     pthread_mutex_lock(&mutex_Tree);
-    lab2_node *remove = tree->root ;
+    lab2_node *remove = tree->root;
     lab2_node *pre = tree->root;
-    lab2_node *successor ;
-    lab2_node *psuccessor ;
-    lab2_node *child ;
-    int state=0; //FALSE
+    lab2_node *successor;
+    lab2_node *psuccessor;
+    lab2_node *child;
+    int state = 0; //FALSE
 
-    while(remove != NULL)  
+    while (remove != NULL)
     {
         pre = remove;
-        if(remove->key == key)
+        if (remove->key == key)
             break;
-        else if(remove->key < key)
+        else if (remove->key < key)
             remove = remove->right;
         else
             remove = remove->left;
@@ -474,45 +527,48 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
         1. simple deletion
         2. complex deletion
     */
-    if(remove !=NULL){
+    if (remove != NULL)
+    {
         //state = true
-        
-        //else if remove has a two child  
-        if ( remove->left !=NULL && remove->right !=NULL ){
-            //1. find successor 
+
+        //else if remove has a two child
+        if (remove->left != NULL && remove->right != NULL)
+        {
+            //1. find successor
             successor = remove->right;
             psuccessor = remove;
-            while(successor->left != NULL) 
-            {psuccessor = successor ; successor = successor-> left;}
-            //2. change value with successor 
+            while (successor->left != NULL)
+            {
+                psuccessor = successor;
+                successor = successor->left;
+            }
+            //2. change value with successor
             remove->key = successor->key;
-            //delete successor 
-            psuccessor-> left = successor->right;
+            //delete successor
+            psuccessor->left = successor->right;
             free(successor);
-            successor =NULL;
+            successor = NULL;
             state = 1; //TRUE
-
         }
         //if remove has a child or no child
-        else if(remove->left == NULL || remove->right == NULL){
+        else if (remove->left == NULL || remove->right == NULL)
+        {
             child = (remove->right == NULL) ? remove->left : remove->right;
-            if(pre->left->key == remove->key)
+            if (pre->left->key == remove->key)
                 pre->left = child;
-            else if(pre->right->key == remove->key)
+            else if (pre->right->key == remove->key)
                 pre->right = child;
-        free(remove);
-        remove = NULL;
-        state = 1; //TRUE
+            free(remove);
+            remove = NULL;
+            state = 1; //TRUE
         }
     }
     else
         state = 0; //"No such Key"
 
-    pthread_mutex_unlock(&mutex_Tree);   
+    pthread_mutex_unlock(&mutex_Tree);
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
-    
 }
-
 
 /*
  * TODO
@@ -522,13 +578,14 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
  *  @param lab2_tree *tree  : bst which you want to delete. 
  *  @return                 : status(success or fail)
  */
-void lab2_tree_delete(lab2_tree *tree) {
+void lab2_tree_delete(lab2_tree *tree)
+{
     // You need to implement lab2_tree_delete function.
-    if(tree->root !=NULL)
+    if (tree->root != NULL)
         lab2_node_delete(tree->root);
-    tree->root =NULL;
-    free(tree); tree=NULL;
-    
+    tree->root = NULL;
+    free(tree);
+    tree = NULL;
 }
 
 /*
@@ -539,15 +596,16 @@ void lab2_tree_delete(lab2_tree *tree) {
  *  @param lab2_tree *tree  : bst node which you want to remove. 
  *  @return                 : status(success or fail)
  */
-void lab2_node_delete(lab2_node *node) {
+void lab2_node_delete(lab2_node *node)
+{
     // You need to implement lab2_node_delete function.
-    if(node->left!=NULL)
+    if (node->left != NULL)
         lab2_node_delete(node->left);
-    if(node->right!=NULL)
+    if (node->right != NULL)
         lab2_node_delete(node->right);
 
-    node->left =NULL; node->right=NULL;
-    free(node); node =NULL;
-
+    node->left = NULL;
+    node->right = NULL;
+    free(node);
+    node = NULL;
 }
-
