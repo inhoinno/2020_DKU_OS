@@ -498,32 +498,35 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
 {
     // You need to implement lab2_node_remove_cg function.
     //#1 traverse
-    pthread_mutex_lock(&mutex_Tree);
+    
+    lab2_node *premove = NULL;
     lab2_node *remove = tree->root;
-    lab2_node *pre = tree->root;
-    lab2_node *successor;
-    lab2_node *psuccessor;
-    lab2_node *child;
+    lab2_node *pleaf = tree->root;
+    lab2_node *leaf = tree->root;
+    lab2_node *psuccessor =NULL;
+    lab2_node *successor =NULL;
+    lab2_node *child =NULL;
     int state = 0; //FALSE
 
-    while (remove != NULL)
+    pthread_mutex_lock(&mutex_Tree);
+    while (leaf != NULL)
     {
-        pre = remove;
+        premove = remove;
+        remove = leaf;
         if (remove->key == key)
-            break;
+            break; //i find a key 
         else if (remove->key < key)
-            remove = remove->right;
+            leaf = leaf->right;
         else
-            remove = remove->left;
+            leaf = leaf->left;
     }
     /*#2 execution
         1. simple deletion
         2. complex deletion
     */
-    if (remove != NULL)
+    if (remove != NULL) //i find value
     {
         //state = true
-
         //else if remove has a two child
         if (remove->left != NULL && remove->right != NULL)
         {
@@ -547,18 +550,39 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
         else if (remove->left == NULL || remove->right == NULL)
         {
             child = (remove->right == NULL) ? remove->left : remove->right;
-            if (pre->left->key == remove->key)
-                pre->left = child;
-            else if (pre->right->key == remove->key)
-                pre->right = child;
-            free(remove);
-            remove = NULL;
+            if(child ==NULL) //Case No Child
+            {
+                if(remove == tree->root){
+                    //tree Deletion
+                    tree->root = NULL;
+                    free(remove); remove = NULL;
+                } 
+                else{// case General
+                    if(premove->left == remove)
+                        premove->left =NULL;
+                    else premove->right = NULL;
+                    free(remove); remove = NULL;
+                }
+            }
+            else // Case one Child
+            {
+                if(remove == tree->root){
+                    //Tree->root = child;
+                    tree->root = child;
+                    free(remove); remove = NULL;
+                } 
+                else{// case General
+                    if(premove->left == remove)
+                        premove->left = child;
+                    else premove->right = child; 
+                    free(remove); remove = NULL;
+                }
+            }
             state = 1; //TRUE
         }
     }
-    else
-        state = 0; //"No such Key"
-
+    else //Cant find value
+        state = 0;                              //"No such Key"
     pthread_mutex_unlock(&mutex_Tree);
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
 }
