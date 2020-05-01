@@ -165,7 +165,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
         {
             pthread_mutex_lock(&(leaf->mutex));
             pleaf = leaf;
-            leaf = (leaf->key <= new_node->key)? leaf->left : leaf->right;
+            leaf = (leaf->key <= new_node->key)? leaf->right : leaf->left;
             //there is no such danger like "leaf has deleted" BECAUSE Delete Needs 4 Locks(SAFE)
             pthread_mutex_unlock(&(pre->mutex));
             pre = pleaf;
