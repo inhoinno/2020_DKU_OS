@@ -306,9 +306,9 @@ int lab2_node_remove(lab2_tree *tree, int key)
             //2. change value with successor
             remove->key = successor->key;
             //delete successor
-            psuccessor->left = successor->right;
-            free(successor);
-            successor = NULL;
+            if(remove != psuccessor) psuccessor->left = successor->right;//?
+            else remove->right = successor->right;
+            free(successor);successor = NULL;
             state = 1; //TRUE
         }
         //if remove has a child or no child
@@ -541,9 +541,9 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
             //2. change value with successor
             remove->key = successor->key;
             //delete successor
-            psuccessor->left = successor->right;
-            free(successor);
-            successor = NULL;
+            if(remove != psuccessor) psuccessor->left = successor->right;//?
+            else remove->right = successor->right;
+            free(successor);successor = NULL;
             state = 1; //TRUE
         }
         //if remove has a child or no child
@@ -583,7 +583,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
     }
     else //Cant find value
         state = 0;                              //"No such Key"
-    pthread_mutex_unlock(&mutex_Tree);
+    pthread_mut x_unlock(&mutex_Tree);
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
 }
 
