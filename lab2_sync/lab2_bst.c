@@ -508,7 +508,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
     lab2_node *child =NULL;
     int state = 0; //FALSE
 
-    pthread_mutex_lock(&mutex_Tree);
+    pthread_mutex_lock(&(mutex_Tree));
     while (leaf != NULL)
     {
         premove = remove;
@@ -583,7 +583,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
     }
     else //Cant find value
         state = 0;                              //"No such Key"
-    pthread_mut x_unlock(&mutex_Tree);
+    pthread_mutex_unlock(&(mutex_Tree));
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
 }
 
