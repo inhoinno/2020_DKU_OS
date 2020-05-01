@@ -23,6 +23,7 @@
 #define RIGHT 1
 
 pthread_mutex_t mutex_Tree = PTHREAD_MUTEX_INITIALIZER; //for coarse grain
+pthread_cond_t TreeEmpty = PTHREAD_COND_INITIALIZER;
 
 // INSERT 가 생산자고, DELETE가 소비자야
 // 생산 할 때는 Pre -> child 로 이어줘
@@ -134,24 +135,6 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node)
 int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
 {
     // You need to implement lab2_node_insert_fg function.
-    /*
-    root = tree->root;
-    pre =root;
-    cond =1
-    #### 1 Reading #####
-    Search한다. root부터. root부터 순회 하며 LOCK 을 다 잡는다
-    IF FOUND NODE? 
-        then UNLOCK from root, to this parent
-
-        //still locked in this node
-            this ->left or right = new_node 
-            //WRITE
-            UNLOCK this node    
-            return true;
-    
-    */
-    // You need to implement lab2_node_insert_cg function.
-
     //hand-over-hand lock mechanism
     struct lab2_node *leaf = tree->root;
     struct lab2_node *pleaf = tree->root;
@@ -160,65 +143,50 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
     int pKey;
 
     //#### 0. Initialize
-    if (tree->root != NULL)
-    {
-        leaf = tree->root;
-        pre = leaf;
-    }
-    else
-    {
-        pthread_mutex_lock(&(mutex_Tree));
-        if (tree->root == NULL){
+    while(tree->root==NULL){
+        pthread_mutex_lock(&mutex_Tree);
+        while(tree->root == NULL){
             tree->root = new_node;
-            pthread_mutex_unlock(&(mutex_Tree));
-            return LAB2_SUCCESS;            
-        }
-        else//then tree root changed already, goto loop 
+            cond = 0;
+        }        
+        pthread_mutex_unlock(&mutex_Tree);
+    }
+    if(cond)
+    {    
+        //#### I. Traverse
+        //hand-over-hand lock
+        //현재 Tree is not empty
+        //Need 3 variable
+        pre = tree->root;
+        pthread_mutex_lock(&pre->mutex);
+        leaf = (pre->key <= new_node->key) ? pre->right : pre->left;
+
+        while (leaf != NULL) // Need to search More
         {
-            leaf = tree->root;
-            pre = leaf;
-            /* code */
-            pthread_mutex_unlock(&(mutex_Tree));
+            pthread_mutex_lock(&(leaf->mutex));
+            pleaf = leaf;
+            leaf = (leaf->key <= new_node->key)? leaf->left : leaf->right;
+            //there is no such danger like "leaf has deleted" BECAUSE Delete Needs 4 Locks(SAFE)
+            pthread_mutex_unlock(&(pre->mutex));
+            pre = pleaf;
         }
 
-    }
-    //#### I. Traverse
-    pthread_mutex_lock(&pre->mutex);
-    leaf = (pre->key < new_node->key) ? pre->right : pre->left;
-    while (leaf != NULL)
-    {
-        if (pthread_mutex_lock(&leaf->mutex) != 0)
-            break; //if leaf deleted, lock returns fail
-        pre = leaf;
+        // After All traverse done, thread has lock on node 'pre'
+        //####  END I. Traverse & Lock/unLock
 
-        if (leaf->key < new_node->key)
-            leaf = leaf->left;
-        else
-            leaf = leaf->right;
+        //#### II. Execution
+        pKey = pre->key;
+        if (pre != NULL && (pKey == pre->key))
+        {
+            //condition : 1. insert 2. simple deletion 3.complex deletion
+            //all cond true mean Insetion/deletion is executing in other subtree.
+            if (pre->key > new_node->key)
+                pre->left = new_node;
+            else
+                pre->right = new_node;
+        }
+        pthread_mutex_unlock(&(pre->mutex)); //## UNLOCK ##
     }
-    // After All traverse done, tree has lock from root to 'pre'
-    leaf = tree->root;
-    while (leaf != pre)
-    {
-        pleaf = leaf;
-        leaf = (leaf->key < new_node->key) ? leaf->right : leaf->left; //leaf null?
-        pthread_mutex_unlock(&pleaf->mutex);
-    }
-    //####  END I. Traverse & Lock/unLock
-    //"Now , It has locked only "pre" Node."
-    //#### II. Execution
-    pKey = pre->key;
-    if (pre != NULL && (pKey == pre->key))
-    {
-        //condition : 1. insert 2. simple deletion 3.complex deletion
-        //all cond true mean Insetion/deletion is executing in other subtree.
-        if (pre->key > new_node->key)
-            pre->left = new_node;
-        else
-            pre->right = new_node;
-    }
-
-    pthread_mutex_unlock(&(pre->mutex)); //## UNLOCK ##
     return LAB2_SUCCESS;
 }
 
