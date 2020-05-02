@@ -531,9 +531,9 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             pthread_mutex_unlock(&(remove->left->mutex));
         if(child[RIGHT])
             pthread_mutex_unlock(&(remove->right->mutex));
-
+        
+        pthread_mutex_unlock(&(remove->mutex));
         if( !(child[LEFT] & child[RIGHT]) ){
-            pthread_mutex_unlock(&(remove->mutex));
             free(remove); remove = NULL;
         }
         state = 1;
