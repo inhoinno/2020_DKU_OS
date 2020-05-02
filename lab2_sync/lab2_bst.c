@@ -362,228 +362,6 @@ int lab2_node_remove(lab2_tree *tree, int key)
  *  @param int key          : key value that you want to delete. 
  *  @return                 : status (success or fail)
  */
-int lab2_node_remove_fg(lab2_tree *tree, int key)
-{
-    // You need to implement lab2_node_remove_fg function.
-    //1 lock/unlock in find successor
-    //2 lock/unlock in change its value
-    // You need to implement lab2_node_remove_cg function.
-    //#### 0. Initialize
-
-    lab2_node *leaf = tree->root;
-    lab2_node *pleaf =NULL;
-    lab2_node *remove =tree->root;
-    lab2_node *premove = NULL;
-    lab2_node *successor;
-    lab2_node *psuccessor;
-    int cond =0;
-    int state = 0;
-    int i =0;
-    int laststep = LEFT;
-    int protect =0;
-    int child[2] = {0, 0};
-    //int childchilde[2] = {0,};
-    //define LEFT 0 RIGHT 1
-    //## 0. Initialize
-    pthread_mutex_lock(&tree_mutex);
-
-    if(tree->root == NULL){
-        //No deletion
-        pthread_mutex_unlock(&tree_mutex);
-        return LAB2_ERROR; // Tree is empty        
-    }
-    if(pthread_mutex_lock(&(remove->mutex)) > 0)
-        write(STDERR_FILENO, "why this happend?\n" , 64);
-    if(remove->key == key){
-        leaf = NULL;
-        cond =1;
-    }
-    else leaf = (remove->key < key) ? remove->right: remove->left;
-
-    while (leaf != NULL)
-    {
-        pthread_mutex_lock(&(leaf->mutex));
-        premove = remove;
-        remove = leaf;
-        if(premove == tree->root)
-            pthread_mutex_unlock(&tree_mutex);
-        if (remove->key == key){
-            cond = 1;
-            break;
-        }
-        else if (remove->key < key)
-            leaf = leaf->right;
-        else
-            leaf = leaf->left;        
-        
-        if(premove != NULL) 
-            pthread_mutex_unlock(&(premove->mutex));
-        
-    }
-    //####  END I. Traverse & Lock/unLock
-    //"And now, remove node locked"
-
-    //#### II. Execution
-    if(cond){
-
-        if (remove->left != NULL){
-            pthread_mutex_lock(&(remove->left->mutex));
-            child[LEFT] = 1; }
-        if (remove->right != NULL){
-            pthread_mutex_lock(&(remove->right->mutex));
-            child[RIGHT] = 1; }
-            
-        if(premove !=NULL){ //lock : premove, remove
-            laststep = (premove->left == remove )? LEFT : RIGHT;
-            if(child[LEFT] & child[RIGHT]){ //TWO CHILD
-                //lock : premove , remove , left ,  rightchild
-                //go right and find successor  3
-                
-                psuccessor = remove->right;
-                successor = remove->right;
-                leaf = successor->left;
-
-                while(leaf != NULL){
-                    pthread_mutex_lock(&(leaf->mutex));
-                    psuccessor = successor;
-                    successor = leaf;
-                    leaf = leaf->left;
-                }
-
-                if(successor == remove->right){
-                    //then 
-                    remove->right = successor->right;
-                    pthread_mutex_unlock(&(successor->mutex));
-                    free(successor); successor = NULL;
-                    child[RIGHT] = 0;
-                    protect =1;
-
-                }
-                else if(psuccessor == remove->right){
-                    psuccessor ->left = successor->right;
-                    pthread_mutex_unlock(&(successor->mutex));
-                    free(successor); successor =NULL;
-                }
-                else{
-                    psuccessor->left = successor->right;
-                    pthread_mutex_unlock(&(successor->mutex));
-                    free(successor); successor = NULL;
-                    leaf = remove->right->left;
-                    do{
-                        pthread_mutex_unlock(&(leaf->mutex));
-                        leaf = leaf->left;
-                    }while(leaf != psuccessor);
-                }
-                // pthread_mutex_unlock(&(remove->mutex));
-                //unlock : left right         
-            }else if(child[LEFT]){ //ONE LEFT CHILD
-                //premove->laststep = remove->left
-                //lock : premove(or tree mutex) remove, LEFT           
-                //case General
-                if(laststep == LEFT){ 
-                    premove->left = remove->left;
-                }
-                else if(laststep == RIGHT) {
-                    premove->right = remove->left;
-                }
-
-                //unlock left
-
-            }else {//ONE RIGHT CHILD or No child
-                //premove->laststep= remove->right;
-                //lock : premove remove remove->right
-                if(laststep == LEFT) premove->left = remove->right;
-                else if(laststep == RIGHT) premove->right = remove->right;
-                //unlock right
-            }
-        }
-        else{ 
-            //lock : remove , tree mutex (root deletion) 
-            if(child[LEFT] & child[RIGHT]){ //TWO CHILD
-                //lock : premove , remove , left ,  rightchild
-                //go right and find successor       
-                psuccessor = remove->right;
-                successor = remove->right;
-                leaf = successor->left;
-
-                while(leaf != NULL){
-                    pthread_mutex_lock(&(leaf->mutex));
-                    psuccessor = successor;
-                    successor = leaf;
-                    leaf = leaf->left;
-                }
-
-                if(successor == remove->right){
-                    //then 
-                    remove->right = successor->right;
-                    pthread_mutex_unlock(&(successor->mutex));
-                    free(successor); successor = NULL;
-                    child[RIGHT] = 0;
-                    protect =1;
-
-                }
-                else if(psuccessor == remove->right){
-                    psuccessor ->left = successor->right;
-                    pthread_mutex_unlock(&(successor->mutex));
-                    free(successor); successor =NULL;
-                }
-                else{
-                    psuccessor->left = successor->right;
-                    pthread_mutex_unlock(&(successor->mutex));
-                    free(successor); successor = NULL;
-                    leaf = remove->right;
-                    do{
-                        leaf = leaf->left;
-                        pthread_mutex_unlock(&(leaf->mutex));
-    
-                    }while(leaf != psuccessor);
-                }
-                // pthread_mutex_unlock(&(remove->mutex));
-                //unlock : left right         
-            }else if(child[LEFT]){ //ONE LEFT CHILD
-                //premove->laststep = remove->left
-                //lock : premove(or tree mutex) remove, LEFT           
-                //case General
-                child[LEFT] = 0;
-                tree->root = remove->left;
-                pthread_mutex_unlock(&(tree->root->mutex));
-                //unlock left
-
-            }else {//ONE RIGHT CHILD or No child
-                //premove->laststep= remove->right;
-                //lock : premove remove remove->right
-                tree->root = remove->right; //could be tree->root=NULL;
-                if(tree->root != NULL)
-                    pthread_mutex_unlock(&(tree->root->mutex));
-                //unlock right
-            }
-        }
-
-        if(child[LEFT])
-            pthread_mutex_unlock(&(remove->left->mutex));
-        if(child[RIGHT])
-            pthread_mutex_unlock(&(remove->right->mutex));
-        
-        pthread_mutex_unlock(&(remove->mutex));
-        if( !(child[LEFT] & child[RIGHT]) && !(protect)){
-            free(remove); remove = NULL;
-        }
-        state = 1;
-
-        if(premove !=NULL)
-            pthread_mutex_unlock(&(premove->mutex));
-        else
-            pthread_mutex_unlock(&tree_mutex);
-        //unlock
-
-    }else{
-        //lock remove
-        state = 0;
-        pthread_mutex_unlock(&(remove->mutex));
-    }
-    
-    return (state != 0 )? LAB2_SUCCESS:LAB2_ERROR; //No such Key
-}
 
 /* 
  * TODO
@@ -593,6 +371,268 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
  *  @param int key          : key value that you want to delete. 
  *  @return                 : status (success or fail)
  */
+int lab2_node_remove_fg(lab2_tree *tree, int key) {
+	if (tree->root == NULL)
+		return LAB2_SUCCESS;
+
+	lab2_node *root = tree->root;               // remove에 필요한 변수 선언
+	lab2_node *p = tree->root;
+	lab2_node *q = NULL;
+	lab2_node *r = NULL;
+	lab2_node *leftChild = NULL;
+	lab2_node *rightChild = NULL;
+	int status = 0;
+	int errNum = 0;
+	int childNum = 0;
+
+	pthread_mutex_init(&p->mutex, NULL);         // lock 초기화
+	pthread_mutex_lock(&p->mutex);               // 노드 p lock
+	while (p) {
+		if (p->key < key) {                     // 노드 p의 key 값이 삭제할 key 값보다 작으면
+			q = p;                           // 노드 p를 right child 로 이동 시키기 위해서 p의 right child 부모를 q에 삽입
+			pthread_mutex_unlock(&p->mutex);      // 노드 p unlock
+			p = p->right;                     // 노드 p를 right child로 내려줌
+		}
+		else if (p->key > key) {               // 노드 p의 key 값이 삭제할 key 값보다 크면
+			q = p;                           // 노드 p를 left child로 이동 시키기 위해서 p의 left child 부모를 q에 삽입
+			pthread_mutex_unlock(&p->mutex);      // 노드 p unlock
+			p = p->left;                     // 노드 p를 left child로 내려줌
+		}
+		else {                              // 삭제할 key값을 찾으면
+			errNum = 1;                        // error number를 1 증가
+			if (p->right != NULL) {               // 노드 p의 right child의 값이 있으면
+				childNum++;                     // 노드 p의 right child가 존재 하기 때문에 child number를 1증가
+				rightChild = p->right;            // rightChild에 노드 p의 right child 값 삽입
+				pthread_mutex_init(&rightChild->mutex, NULL);   // 삽입한 rightChild lock 초기화
+			}
+			if (p->left != NULL) {               // 노드 p의 left child의 값이 있으면
+				childNum++;                     // 노드 p의 left child가 존재 하기 때문에 child number를 1증가
+				leftChild = p->left;            // leftChild에 노드 p의 left child 값 삽입
+				pthread_mutex_init(&leftChild->mutex, NULL);   // 삽입한 leftChild lock 초기화
+			}
+			break;
+		}
+		pthread_mutex_unlock(&p->mutex);         // 마지막으로 노드 p unlock
+	}
+
+	if (errNum == 0)                        // error number가 1로 증가 되지 않았으면, 삭제할 key 값이 tree안에 존재하지 않으므로
+		return LAB2_ERROR;                     // error를 return 한다
+
+	if (q != NULL)                           // 노드 p의 부모를 q에 삽입 했는데, 삽입한 q값이 존재하면
+		pthread_mutex_init(&q->mutex, NULL);      // 노드 q lock 초기화
+
+	if (childNum == 0) {                     // 노드 p의 child 개수가 0이면
+		if (q == NULL) {                     // p의 부모가 없으면
+			lab2_node_delete(p);               // p의 값 삭제
+			goto success;
+		}
+
+		pthread_mutex_lock(&q->mutex);            // 노드 p의 부모 q lock
+		pthread_mutex_lock(&p->mutex);            // 노드 p lock
+		if (q->key > key) {                     // 노드 p의 부모 q의 key 값이 삭제할 key값 보다 크면
+			q->left = NULL;                     // 노드 q의 left child 초기화 
+			pthread_mutex_unlock(&p->mutex);      // 노드 p unlock
+			lab2_node_delete(p);               // 노드 p 삭제
+		}
+		else {                              // 노드 p의 부모 q의 key 값이 삭제할 key값 보다 작으면
+			q->right = NULL;                  // 노드 q의 right child 초기화
+			pthread_mutex_unlock(&p->mutex);      // 노드 p unlock
+			lab2_node_delete(p);               // 노드 p 삭제
+		}
+		pthread_mutex_unlock(&q->mutex);         // 마지막으로 노드 p의 부모 q unlock
+		goto success;
+	}
+
+	else if (childNum == 1) {                  // 노드 p의 child 개수가 1이면
+		pthread_mutex_lock(&p->mutex);            // 노드 p lock
+		if (q == NULL) {                     // 노드 p의 부모 q가 NULL이면
+			q = p;                           // 노드 q에 노드 p값 삽입
+			pthread_mutex_lock(&root->mutex);      // root lock
+
+			if (p->left != NULL) {               // 노드 p의 left child값이 있으면
+				pthread_mutex_lock(&leftChild->mutex);   // 노드 p의 left child lock
+				tree->root = p->left;            // root값에 노드 p의 left child 값 삽입
+				pthread_mutex_unlock(&leftChild->mutex);   // left child unlock
+				pthread_mutex_unlock(&root->mutex);   // root unlock
+				lab2_node_delete(q);            // 노드 q 삭제
+				pthread_mutex_unlock(&p->mutex);   // 노드 p unlock
+			}
+			else {                           // 노드 p의 right child값이 있으면
+				pthread_mutex_lock(&rightChild->mutex);   // 노드 p의 right child lock
+				tree->root = p->right;            // root값에 노드 p의 right child 값 삽입
+				pthread_mutex_unlock(&rightChild->mutex);   // right child unlock
+				pthread_mutex_unlock(&root->mutex);   // root unlock
+				lab2_node_delete(q);            // 노드 q 삭제
+				pthread_mutex_unlock(&p->mutex);   // 노드 p unlock
+			}
+			goto success;
+		}
+
+		pthread_mutex_lock(&q->mutex);            // 노드 q lock
+		if (q->key > key) {                     // 노드 q의 key값이 삭제할 key값 보다 크면
+			if (p->left != NULL) {               // 노드 p의 left child값이 존재하면
+				pthread_mutex_lock(&leftChild->mutex);   // left child lock
+				q->left = p->left;               // 노드 q의 left child에 노드 p의 left child값 삽입
+				pthread_mutex_unlock(&q->mutex);   // 노드 q unlock
+				lab2_node_delete(p);            // 노드 p 삭제
+				pthread_mutex_unlock(&leftChild->mutex);   // left child unlock
+				pthread_mutex_unlock(&p->mutex);   // 노드 p unlock
+			}
+			else {                           // 노드 p의 right child값이 존재하면
+				pthread_mutex_lock(&rightChild->mutex);   // right child lock
+				q->left = p->right;               // 노드 q의 left child에 노드 p의 right child값 삽입
+				pthread_mutex_unlock(&q->mutex);   // 노드 q unlock
+				lab2_node_delete(p);            // 노드 p 삭제
+				pthread_mutex_unlock(&rightChild->mutex);   // right child unlock
+				pthread_mutex_unlock(&p->mutex);   // 노드 p unlock
+			}
+		}
+		else {                              // 아래 위와 반대
+			if (p->left != NULL) {
+				pthread_mutex_lock(&leftChild->mutex);
+				q->right = p->left;
+				pthread_mutex_unlock(&q->mutex);
+				lab2_node_delete(p);
+				pthread_mutex_unlock(&leftChild->mutex);
+				pthread_mutex_unlock(&p->mutex);
+			}
+			else {
+				pthread_mutex_lock(&rightChild->mutex);
+				q->right = p->right;
+				pthread_mutex_unlock(&q->mutex);
+				lab2_node_delete(p);
+				pthread_mutex_unlock(&rightChild->mutex);
+				pthread_mutex_unlock(&p->mutex);
+			}
+		}
+		goto success;
+	}
+
+	else {                                 // 노드 p의 child 개수가 2면
+		r = p;
+		p = p->left;
+
+		pthread_mutex_init(&p->mutex, NULL);
+		pthread_mutex_init(&r->mutex, NULL);
+		while (1) {
+			pthread_mutex_lock(&p->mutex);         // 노드 p lock
+			if (q != NULL) {                  // 노드 q의 값이 NULL이 아니면
+				pthread_mutex_lock(&r->mutex);      // 노드 r lock
+				r = p;
+				pthread_mutex_unlock(&r->mutex);   // 노드 r unlock
+				p = p->right;                  // 노드 p를 right child로 내려줌
+
+				if (p->left != NULL) {            // 노드 p의 left child값이 존재하면
+					pthread_mutex_lock(&leftChild->mutex);   // leftChild lock
+					leftChild = p->left;               // leftChild에 노드 p의 left child값 삽입
+					pthread_mutex_unlock(&leftChild->mutex);   // leftChild unlock
+				}
+				if (p->right != NULL) {            // 노드 p의 right child값이 존재하면
+					pthread_mutex_lock(&rightChild->mutex);   // rightChild lock
+					rightChild = p->right;               // rightChild에 노드 p의 right child값 삽입
+					pthread_mutex_unlock(&rightChild->mutex);   // rightChild unlock
+				}
+			}
+			else {                           // 노드 q의 값이 NULL이면
+				pthread_mutex_lock(&root->mutex);   // root lock
+				if (r->key > p->key) {            // 노드 r의 key값이 노드 p의 key값 보다 크면
+					pthread_mutex_lock(&r->mutex);   // 노드 r lock
+					if (q == NULL) {            // 노드 q가 NULL이면
+						p->right = r->right;      // 노드 p의 right child에 노드 r의 right child값 삽입
+						tree->root = p;            // root값에 노드 p 삽입
+						pthread_mutex_unlock(&r->mutex);   // 노드 r unlock
+						pthread_mutex_unlock(&root->mutex);   // root unlock
+						lab2_node_delete(r);      // 노드 r 삭제
+					}
+					else {
+						p->right = r->right;      // 노드 p의 right child에 노드 r의 right child값 삽입
+						pthread_mutex_unlock(&r->mutex);   // 노드 r unlock
+						if (q->key > p->key) {      // 노드 q의 key값이 노드 p의 key값 보다 크면
+							pthread_mutex_lock(&leftChild->mutex);   // leftChild lock
+							q->left = p;         // 노드 q의 left child에 노드 p값 삽입
+							pthread_mutex_unlock(&leftChild->mutex);   // lock 해제
+							pthread_mutex_unlock(&r->mutex);
+							pthread_mutex_unlock(&root->mutex);
+						}
+						else {
+							pthread_mutex_lock(&rightChild->mutex);   // 위와 반대
+							q->right = p;
+							pthread_mutex_unlock(&rightChild->mutex);
+							pthread_mutex_unlock(&r->mutex);
+							pthread_mutex_unlock(&root->mutex);
+						}
+						lab2_node_delete(r);
+					}
+					goto success;
+				}
+				else {                        // 노드 r의 key값이 노드 p의 key값 보다 작으면
+					if (p->left != NULL) {         // 노드 p의 left child값이 존재하면
+						pthread_mutex_lock(&r->mutex);   // 노드 r lock
+						r->right = p->left;         // 노드 r의 right child에 노드 p의 left child값 대입
+						pthread_mutex_unlock(&r->mutex);   // lock 해제
+						pthread_mutex_unlock(&root->mutex);
+					}
+					else {
+						pthread_mutex_lock(&r->mutex);   // 노드 r lock
+						r->right = NULL;            // 노드 r right child 초기화
+						pthread_mutex_unlock(&r->mutex);   // lock 해제
+						pthread_mutex_unlock(&root->mutex);
+					}
+				}
+
+				if (q == NULL) {                  // 노드 q 가 NULL 이면
+					pthread_mutex_lock(&q->mutex);      // 위의 부모부터 lock
+					pthread_mutex_lock(&r->mutex);
+					r = tree->root;                  // 노드 r에 root값 삽입
+					pthread_mutex_lock(&rightChild->mutex);   // rightChild lock
+					p->right = tree->root->right;      // 노드 p의 right child값에 root의 right child값 삽입
+					pthread_mutex_unlock(&rightChild->mutex);   // rightChild unlock
+					pthread_mutex_lock(&leftChild->mutex);   // leftChild lock
+					p->left = tree->root->left;         // 노드 p의 left child값에 root의 left child값 삽입
+					pthread_mutex_lock(&rightChild->mutex);   // leftChild unlock
+					pthread_mutex_unlock(&r->mutex);   // lock해제
+					pthread_mutex_unlock(&q->mutex);
+					tree->root = p;                  // root에 p값 삽입
+					pthread_mutex_unlock(&root->mutex);
+					lab2_node_delete(r);            // 노드 r 삭제
+					goto success;
+				}
+
+				if (q->key > p->key) {               // 노드 q의 key값이 노드 p의 key값 보다 크면
+					pthread_mutex_lock(&q->mutex);      // 위에서부터 lock
+					pthread_mutex_lock(&leftChild->mutex);
+					p->left = q->left->left;         // 노드 p의 left child에 노드 q의 left child의 left child값 삽입
+					pthread_mutex_lock(&rightChild->mutex);   // rightChild lock
+					p->right = q->left->right;         // 노드 p의 right child에 노드 q의 left child의 right child값 삽입
+					pthread_mutex_unlock(&rightChild->mutex);   // rightChild lock
+					lab2_node_delete(q->left);         // 노드 q의 left child 삭제
+					q->left = p;                  // 노드 q의 left child에 노드 p 삽입
+					pthread_mutex_unlock(&leftChild->mutex);   // 락 해제
+					pthread_mutex_unlock(&q->mutex);
+					pthread_mutex_unlock(&root->mutex);
+				}
+				else {                           // 위와 반대 노드 q의 right child 부분
+					pthread_mutex_lock(&q->mutex);
+					pthread_mutex_lock(&rightChild->mutex);
+					pthread_mutex_lock(&leftChild->mutex);
+					p->left = q->right->left;
+					pthread_mutex_unlock(&leftChild->mutex);
+					p->right = q->right->right;
+					lab2_node_delete(q->right);
+					q->right = p;
+					pthread_mutex_unlock(&rightChild->mutex);
+					pthread_mutex_unlock(&q->mutex);
+					pthread_mutex_unlock(&root->mutex);
+				}
+				break;
+			}
+			pthread_mutex_unlock(&p->mutex);
+		}
+	}
+success:
+	return LAB2_SUCCESS;
+}
+
 int lab2_node_remove_cg(lab2_tree *tree, int key)
 {
     // You need to implement lab2_node_remove_cg function.
