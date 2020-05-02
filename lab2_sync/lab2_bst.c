@@ -23,6 +23,7 @@
 #define RIGHT 1
 
 pthread_mutex_t mutex_Tree = PTHREAD_MUTEX_INITIALIZER; //for coarse grain
+pthread_mutex_t tree_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t TreeEmpty = PTHREAD_COND_INITIALIZER;
 
 // INSERT 가 생산자고, DELETE가 소비자야
@@ -382,11 +383,11 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
     //int childchilde[2] = {0,};
     //define LEFT 0 RIGHT 1
     //## 0. Initialize
-    pthread_mutex_lock(&(mutex_Tree));
+    pthread_mutex_lock(&tree_mutex);
 
     if(tree->root == NULL){
         //No deletion
-        pthread_mutex_unlock(&mutex_Tree);
+        pthread_mutex_unlock(&tree_mutex);
         return LAB2_ERROR; // Tree is empty        
     }
     pthread_mutex_lock(&(remove->mutex));
@@ -402,7 +403,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
         premove = remove;
         remove = leaf;
         if(premove == tree->root)
-            pthread_mutex_unlock(&(mutex_Tree));
+            pthread_mutex_unlock(&tree_mutex);
         if (remove->key == key){
             cond = 1;
             break;
@@ -540,7 +541,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
         if(premove !=NULL)
             pthread_mutex_unlock(&(premove->mutex));
         else
-            pthread_mutex_unlock(&(mutex_Tree));
+            pthread_mutex_unlock(&tree_mutex);
         //unlock
 
     }else{
