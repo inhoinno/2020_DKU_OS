@@ -159,7 +159,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
         //현재 Tree is not empty
         //Need 3 variable
         pre = tree->root;
-        pthread_mutex_lock(&pre->mutex);
+        pthread_mutex_lock(&(pre->mutex));
         leaf = (pre->key <= new_node->key) ? pre->right : pre->left;
 
         while (leaf != NULL) // Need to search More
@@ -449,7 +449,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     leaf = leaf->left;
                     if(psuccessor != remove->right)
                         pthread_mutex_unlock(&(psuccessor->mutex));
-
                 }
                 //successor = remove's successor
                 remove->key = successor->key;
