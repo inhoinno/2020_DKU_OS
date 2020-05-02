@@ -391,7 +391,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
         pthread_mutex_unlock(&tree_mutex);
         return LAB2_ERROR; // Tree is empty        
     }
-    pthread_mutex_lock(&(remove->mutex));
+    if(pthread_mutex_lock(&(remove->mutex)) > 0)
+        write(STDERR_FILENO, "why this happend?\n" , 64);
     if(remove->key == key){
         leaf = NULL;
         cond =1;
@@ -436,8 +437,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             if(child[LEFT] & child[RIGHT]){ //TWO CHILD
                 //lock : premove , remove , left ,  rightchild
                 //go right and find successor  3
-                successor = remove->right;
-                psuccessor = remove;            //successor 부모
+                successor = remove->right->left;        
+                psuccessor = remove->right;            //successor 부모
                 leaf = remove->right->left;  
 
                 //hand over hand optimization
