@@ -375,12 +375,16 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
     lab2_node *psuccessor;
     int cond =0;
     int state = 0;
+    int i =0;
     int laststep = LEFT;
     int child[2] = {0, 0};
     //int childchilde[2] = {0,};
     //define LEFT 0 RIGHT 1
     //## 0. Initialize
+    printf(" %d ",i++);
     pthread_mutex_lock(&(mutex_Tree));
+        printf(" %d ",i++);
+
     if(tree->root == NULL){
         //No deletion
         pthread_mutex_unlock(&mutex_Tree);
@@ -392,6 +396,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
         cond =1;
     }
     else leaf = (remove->key < key) ? remove->right: remove->left;
+        printf(" %d ",i++);
+
     while (leaf != NULL)
     {
         pthread_mutex_lock(&leaf->mutex);
@@ -417,6 +423,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
 
     //#### II. Execution
     if(cond){
+            printf(" %d ",i++);
+
         if (remove->left != NULL){
             pthread_mutex_lock(&remove->left->mutex);
             child[LEFT] = 1; }
