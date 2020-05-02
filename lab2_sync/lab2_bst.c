@@ -383,14 +383,7 @@ int lab2_node_remove(lab2_tree *tree, int key)
  *  @return                 : status (success or fail)
  */
 
-/* 
- * TODO
- *  Implement a function which remove nodes from the BST in coarse-grained manner.
- *
- *  @param lab2_tree *tree  : bst tha you need to remove node in coarse-grained manner from bst which contains key.
- *  @param int key          : key value that you want to delete. 
- *  @return                 : status (success or fail)
- */int lab2_node_remove_fg(lab2_tree *tree, int key)
+int lab2_node_remove_fg(lab2_tree *tree, int key)
 {
     // You need to implement lab2_node_remove_fg function.
     //1 lock/unlock in find successor
@@ -420,6 +413,7 @@ int lab2_node_remove(lab2_tree *tree, int key)
         pthread_mutex_unlock(&tree_mutex);
         return LAB2_ERROR; // Tree is empty        
     }
+    remove =tree->root;
     if(pthread_mutex_lock(&(remove->mutex)) > 0)
         write(STDERR_FILENO, "why this happend?\n" , 64);
     if(remove->key == key){
