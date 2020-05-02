@@ -439,7 +439,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                 //go right and find successor       
                 psuccessor = remove->right;            //successor 부모
                 successor = remove->right->left;       //successor 위치
-                pthread_mutex_lock(&successor->mutex); // ...how unlock it?
                 while (successor->left != NULL)
                 {
                     pthread_mutex_lock(&(successor->mutex));
