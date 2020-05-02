@@ -251,7 +251,7 @@ void bst_test(int num_threads,int node_count){
         else if(is_sync == LAB2_TYPE_COARSEGRAINED)
             lab2_node_insert_cg(tree,node);
     }
-
+    lab2_node_init_inorder(tree);
     gettimeofday(&tv_delete_start, NULL);
     for(i=0 ; i < num_threads ; i++){
         thread_arg *th_arg = &threads[i];

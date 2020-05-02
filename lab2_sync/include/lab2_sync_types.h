@@ -79,6 +79,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key);
 int lab2_node_remove_cg(lab2_tree *tree, int key);
 void lab2_tree_delete(lab2_tree *tree);
 void lab2_node_delete(lab2_node *node);
+int lab2_node_init_inorder(lab2_tree *tree);
+int lab2_node_init(lab2_node *node);
 
 
 /*
