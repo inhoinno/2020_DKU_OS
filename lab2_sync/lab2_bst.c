@@ -506,7 +506,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     psuccessor->left = successor->right;
                 }else {
                     //successor is remove->right
-                    child[RIGHT] =0;protect = 1
+                    child[RIGHT] =0;protect = 1;
                 }
                 pthread_mutex_unlock(&successor->mutex);
                 free(successor);
