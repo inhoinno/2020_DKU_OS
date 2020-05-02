@@ -438,40 +438,55 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             if(child[LEFT] & child[RIGHT]){ //TWO CHILD
                 //lock : premove , remove , left ,  rightchild
                 //go right and find successor  3
-                  successor = remove->right;
-                psuccessor = remove;            //successor 부모
-                leaf = remove->right->left;  
+                
+                psuccessor = remove->right;
+                successor = remove->right;
+                leaf = successor->left;
 
-                //hand over hand optimization
-                while (leaf!=NULL)
-                {
+                while(leaf != NULL){
                     pthread_mutex_lock(&(leaf->mutex));
                     psuccessor = successor;
                     successor = leaf;
                     leaf = leaf->left;
-                    if(psuccessor != remove->right)
-                        pthread_mutex_unlock(&(psuccessor->mutex));
+                }
+
+                if(successor == remove->right){
+                    //then 
+                    remove->right = successor->right;
+                    pthread_mutex_unlock(&(successor->mutex));
+                    free(successor); successor = NULL;
+                    child[RIGHT] = 0;
+                    protect =1;
 
                 }
-                //successor = remove's successor
-                remove->key = successor->key;
-                if(successor != remove->right){
-                    psuccessor->left = successor->right;}
-                else {
-                    //successor is remove->right
-                    child[RIGHT] =0; protect = 1;
+                else if(psuccessor == remove->right){
+                    psuccessor ->left = successor->right;
+                    pthread_mutex_unlock(&(successor->mutex));
+                    free(successor); successor =NULL;
                 }
-                pthread_mutex_unlock(&(successor->mutex));
-                free(successor);
-                successor = NULL;
+                else{
+                    psuccessor->left = successor->right;
+                    pthread_mutex_unlock(&(successor));
+                    free(successor); successor = NULL;
+                    leaf = remove->right->left;
+                    do{
+                        pthread_mutex_unlock(&(leaf->mutex));
+                        leaf = leaf->left;
+                    }while(leaf == psuccessor);
+                }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
             }else if(child[LEFT]){ //ONE LEFT CHILD
                 //premove->laststep = remove->left
                 //lock : premove(or tree mutex) remove, LEFT           
                 //case General
-                if(laststep == LEFT) premove->left = remove->left;
-                else if(laststep == RIGHT) premove->right = remove->left;
+                if(laststep == LEFT){ 
+                    premove->left = remove->left;
+                }
+                else if(laststep == RIGHT) {
+                    premove->right = remove->left;
+                }
+
                 //unlock left
 
             }else {//ONE RIGHT CHILD or No child
@@ -487,45 +502,58 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             if(child[LEFT] & child[RIGHT]){ //TWO CHILD
                 //lock : premove , remove , left ,  rightchild
                 //go right and find successor       
-               successor = remove->right;
-                psuccessor = remove;            //successor 부모
-                leaf = remove->right->left;  
+                psuccessor = remove->right;
+                successor = remove->right;
+                leaf = successor->left;
 
-                //hand over hand optimization
-                while (leaf!=NULL)
-                {
+                while(leaf != NULL){
                     pthread_mutex_lock(&(leaf->mutex));
                     psuccessor = successor;
                     successor = leaf;
                     leaf = leaf->left;
-                    if(psuccessor != remove->right)
-                        pthread_mutex_unlock(&(psuccessor->mutex));
+                }
+
+                if(successor == remove->right){
+                    //then 
+                    remove->right = successor->right;
+                    pthread_mutex_unlock(&(successor->mutex));
+                    free(successor); successor = NULL;
+                    child[RIGHT] = 0;
+                    protect =1;
 
                 }
-                //successor = remove's successor
-                remove->key = successor->key;
-                if(successor != remove->right){
-                    psuccessor->left = successor->right;
-                }else {
-                    //successor is remove->right
-                    child[RIGHT] =0;protect = 1;
+                else if(psuccessor == remove->right){
+                    psuccessor ->left = successor->right;
+                    pthread_mutex_unlock(&(successor->mutex));
+                    free(successor); successor =NULL;
                 }
-                pthread_mutex_unlock(&(successor->mutex));
-                free(successor);
-                successor = NULL;
+                else{
+                    psuccessor->left = successor->right;
+                    pthread_mutex_unlock(&(successor));
+                    free(successor); successor = NULL;
+                    leaf = remove->right->left;
+                    do{
+                        pthread_mutex_unlock(&(leaf->mutex));
+                        leaf = leaf->left;
+                    }while(leaf == psuccessor);
+                }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
             }else if(child[LEFT]){ //ONE LEFT CHILD
                 //premove->laststep = remove->left
                 //lock : premove(or tree mutex) remove, LEFT           
                 //case General
+                child[LEFT] = 0;
                 tree->root = remove->left;
+                pthread_mutex_unlock(&(tree->root->mutex));
                 //unlock left
 
             }else {//ONE RIGHT CHILD or No child
                 //premove->laststep= remove->right;
                 //lock : premove remove remove->right
                 tree->root = remove->right; //could be tree->root=NULL;
+                if(tree->root != NULL)
+                    pthread_mutex_unlock(&(tree->root->mutex));
                 //unlock right
             }
         }
