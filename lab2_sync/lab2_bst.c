@@ -400,7 +400,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
 
     while (leaf != NULL)
     {
-        pthread_mutex_lock(&leaf->mutex);
+        pthread_mutex_lock(&(leaf->mutex));
         premove = remove;
         remove = leaf;
         if(premove == tree->root)
@@ -425,10 +425,10 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
     if(cond){
 
         if (remove->left != NULL){
-            pthread_mutex_lock(&remove->left->mutex);
+            pthread_mutex_lock(&(remove->left->mutex));
             child[LEFT] = 1; }
         if (remove->right != NULL){
-            pthread_mutex_lock(&remove->right->mutex);
+            pthread_mutex_lock(&(remove->right->mutex));
             child[RIGHT] = 1; }
             
         if(premove !=NULL){ //lock : premove, remove
@@ -458,7 +458,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     //successor is remove->right
                     child[RIGHT] =0; protect = 1;
                 }
-                pthread_mutex_unlock(&successor->mutex);
+                pthread_mutex_unlock(&(successor->mutex));
                 free(successor);
                 successor = NULL;
                 // pthread_mutex_unlock(&(remove->mutex));
@@ -507,7 +507,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     //successor is remove->right
                     child[RIGHT] =0;protect = 1;
                 }
-                pthread_mutex_unlock(&successor->mutex);
+                pthread_mutex_unlock(&(successor->mutex));
                 free(successor);
                 successor = NULL;
                 // pthread_mutex_unlock(&(remove->mutex));
