@@ -205,6 +205,7 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node)
 
     struct lab2_node *leaf = NULL;
     struct lab2_node *pre = NULL;
+
     int cond = 1; // volatile?
     int pKey;
     pthread_mutex_lock(&mutex_Tree);
@@ -381,9 +382,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
     //int childchilde[2] = {0,};
     //define LEFT 0 RIGHT 1
     //## 0. Initialize
-    printf(" %d ",i++);
     pthread_mutex_lock(&(mutex_Tree));
-        printf(" %d ",i++);
 
     if(tree->root == NULL){
         //No deletion
@@ -396,7 +395,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
         cond =1;
     }
     else leaf = (remove->key < key) ? remove->right: remove->left;
-        printf(" %d ",i++);
 
     while (leaf != NULL)
     {
@@ -423,7 +421,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
 
     //#### II. Execution
     if(cond){
-            printf(" %d ",i++);
 
         if (remove->left != NULL){
             pthread_mutex_lock(&remove->left->mutex);
@@ -486,28 +483,32 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             if(child[LEFT] & child[RIGHT]){ //TWO CHILD
                 //lock : premove , remove , left ,  rightchild
                 //go right and find successor       
-                psuccessor = remove->right;            //successor 부모
-                successor = remove->right->left;       //successor 위치
-                pthread_mutex_lock(&successor->mutex); // ...how unlock it?
-                while (successor->left != NULL)
+               successor = remove->right;
+                psuccessor = remove;            //successor 부모
+                leaf = remove->right->left;  
+
+                //hand over hand optimization
+                while (leaf!=NULL)
                 {
-                    pthread_mutex_lock(&(successor->mutex));
+                    pthread_mutex_lock(&(leaf->mutex));
                     psuccessor = successor;
-                    successor = successor->left;
+                    successor = leaf;
+                    leaf = leaf->left;
+                    if(psuccessor != remove->right)
+                        pthread_mutex_unlock(&(psuccessor->mutex));
+
                 }
-                pthread_mutex_lock(&(successor->mutex));
                 //successor = remove's successor
                 remove->key = successor->key;
-                psuccessor->left = successor->right;
+                if(successor != remove->right){
+                    psuccessor->left = successor->right;
+                }else 
+                    //successor is remove->right
+                    child[RIGHT] =0;
+
                 pthread_mutex_unlock(&successor->mutex);
                 free(successor);
                 successor = NULL;
-                psuccessor = remove->right->left;
-                while (psuccessor != NULL)
-                {
-                    pthread_mutex_unlock(&(psuccessor->mutex));
-                    psuccessor = psuccessor->left;
-                }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
             }else if(child[LEFT]){ //ONE LEFT CHILD
@@ -524,6 +525,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                 //unlock right
             }
         }
+
         if(child[LEFT])
             pthread_mutex_unlock(&(remove->left->mutex));
         if(child[RIGHT])
@@ -534,85 +536,19 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             free(remove); remove = NULL;
         }
         state = 1;
+
         if(premove !=NULL)
             pthread_mutex_unlock(&(premove->mutex));
         else
             pthread_mutex_unlock(&(mutex_Tree));
         //unlock
+
     }else{
         //lock remove
         state = 0;
         pthread_mutex_unlock(&(remove->mutex));
     }
-    // //"4월29일,
-    // //remove fg 는 4개의노드 premove, remove, remove->l remove->r 을 Lock 해주어야 한다
-    // // if(premove != NULL)
-    // //     pthread_mutex_lock(&premove->mutex);//dead
-    // if (remove->left != NULL)
-    // {
-    //     pthread_mutex_lock(&remove->left->mutex);
-    //     child[LEFT] = 1;
-    // }
-    // if (remove->right != NULL)
-    // {
-    //     pthread_mutex_lock(&remove->right->mutex);
-    //     child[RIGHT] = 1;
-    // }
-    // //if(remove->key == key)    {
-    // //Complex Deletion
-    // if (child[LEFT] & child[RIGHT])
-    // {                                          //it has both child
-    //     psuccessor = remove->right;            //successor 부모
-    //     successor = remove->right->left;       //successor 위치
-    //     pthread_mutex_lock(&successor->mutex); // ...how unlock it?
-    //     while (successor->left != NULL)
-    //     {
-    //         pthread_mutex_lock(&(successor->mutex));
-    //         psuccessor = successor;
-    //         successor = successor->left;
-    //     }
-    //     pthread_mutex_lock(&(successor->mutex));
-    //     //successor = remove's successor
-    //     remove->key = successor->key;
-    //     psuccessor->left = successor->right;
-    //     pthread_mutex_unlock(&successor->mutex);
-    //     free(successor);
-    //     successor = NULL;
-    //     psuccessor = remove->right->left;
-    //     while (psuccessor != NULL)
-    //     {
-    //         pthread_mutex_unlock(&(psuccessor->mutex));
-    //         psuccessor = psuccessor->left;
-    //     }
-    //     pthread_mutex_unlock(&(remove->left->mutex));
-    //     pthread_mutex_unlock(&(remove->right->mutex));
-    //     pthread_mutex_unlock(&(remove->mutex));
-    // }
-    // //Simple Deletion
-    // else if (child[LEFT])
-    // {
-    //     if (premove->left == remove)
-    //         premove->left = remove->left;
-    //     else
-    //         premove->right = remove->left;
-    //     free(remove);
-    //     remove = NULL;
-    //     pthread_mutex_unlock(&(premove->left->mutex));
-    // }
-    // else
-    // { //child[RIGHT] & No child;
-    //     if (premove->left == remove)
-    //         premove->left = remove->right;
-    //     else
-    //         premove->right = remove->right;
-    //     free(remove);
-    //     remove = NULL;
-    //     pthread_mutex_unlock(&(premove->right->mutex));
-    // }
-    // if (premove != NULL)
-    //     pthread_mutex_unlock(&(premove->mutex));
-    // else
-    //     return LAB2_ERROR;
+    
     return (state != 0 )? LAB2_SUCCESS:LAB2_ERROR; //No such Key
 }
 
