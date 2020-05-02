@@ -438,8 +438,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             if(child[LEFT] & child[RIGHT]){ //TWO CHILD
                 //lock : premove , remove , left ,  rightchild
                 //go right and find successor  3
-                successor = remove->right->left;        
-                psuccessor = remove->right;            //successor 부모
+                  successor = remove->right;
+                psuccessor = remove;            //successor 부모
                 leaf = remove->right->left;  
 
                 //hand over hand optimization
@@ -451,12 +451,13 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     leaf = leaf->left;
                     if(psuccessor != remove->right)
                         pthread_mutex_unlock(&(psuccessor->mutex));
+
                 }
                 //successor = remove's successor
                 remove->key = successor->key;
                 if(successor != remove->right){
-                    psuccessor->left = successor->right;
-                }else {
+                    psuccessor->left = successor->right;}
+                else {
                     //successor is remove->right
                     child[RIGHT] =0; protect = 1;
                 }
