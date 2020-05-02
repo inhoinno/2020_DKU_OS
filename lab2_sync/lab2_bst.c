@@ -447,7 +447,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
 
     //#### II. Execution
     if(cond){
-
         if (remove->left != NULL){
             pthread_mutex_lock(&(remove->left->mutex)); //thread 8 wait
             child[LEFT] = 1; }
@@ -490,10 +489,11 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     psuccessor->left = successor->right;
                     pthread_mutex_unlock(&(successor->mutex));
                     free(successor); successor = NULL;
-                    leaf = remove->right->left;
+                    leaf = remove->right;
                     do{
-                        pthread_mutex_unlock(&(leaf->mutex)); //dead
                         leaf = leaf->left;
+                        pthread_mutex_unlock(&(leaf->mutex)); //dead
+                        
                     }while(leaf != psuccessor && leaf !=NULL);
                     
                 }
@@ -557,9 +557,9 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     leaf = remove->right;
                     do{
                         leaf = leaf->left;
-                        pthread_mutex_unlock(&(leaf->mutex));
-    
-                    }while(leaf != psuccessor);
+                        pthread_mutex_unlock(&(leaf->mutex)); //dead
+                        
+                    }while(leaf != psuccessor && leaf !=NULL);
                 }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
