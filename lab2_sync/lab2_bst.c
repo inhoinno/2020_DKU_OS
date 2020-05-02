@@ -436,28 +436,33 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
             laststep = (premove->left == remove )? LEFT : RIGHT;
             if(child[LEFT] & child[RIGHT]){ //TWO CHILD
                 //lock : premove , remove , left ,  rightchild
-                //go right and find successor       
-                psuccessor = remove->right;            //successor 부모
-                successor = remove->right->left;       //successor 위치
-                while (successor->left != NULL)
+                //go right and find successor  3
+                successor = remove->right;
+                psuccessor = remove;            //successor 부모
+                leaf = remove->right->left;  
+
+                //hand over hand optimization
+                while (leaf!=NULL)
                 {
-                    pthread_mutex_lock(&(successor->mutex));
+                    pthread_mutex_lock(&(leaf->mutex));
                     psuccessor = successor;
-                    successor = successor->left;
+                    successor = leaf;
+                    leaf = leaf->left;
+                    if(psuccessor != remove->right)
+                        pthread_mutex_unlock(&(psuccessor->mutex));
+
                 }
-                pthread_mutex_lock(&(successor->mutex));
                 //successor = remove's successor
                 remove->key = successor->key;
-                psuccessor->left = successor->right;
+                if(successor != remove->right){
+                    psuccessor->left = successor->right;
+                }else 
+                    //successor is remove->right
+                    child[RIGHT] =0;
+
                 pthread_mutex_unlock(&successor->mutex);
                 free(successor);
                 successor = NULL;
-                psuccessor = remove->right->left;
-                while (psuccessor != NULL)
-                {
-                    pthread_mutex_unlock(&(psuccessor->mutex));
-                    psuccessor = psuccessor->left;
-                }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
             }else if(child[LEFT]){ //ONE LEFT CHILD
