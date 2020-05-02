@@ -472,7 +472,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     do{
                         pthread_mutex_unlock(&(leaf->mutex));
                         leaf = leaf->left;
-                    }while(leaf == psuccessor);
+                    }while(leaf != psuccessor);
                 }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
@@ -535,7 +535,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     do{
                         pthread_mutex_unlock(&(leaf->mutex));
                         leaf = leaf->left;
-                    }while(leaf == psuccessor);
+                    }while(leaf != psuccessor);
                 }
                 // pthread_mutex_unlock(&(remove->mutex));
                 //unlock : left right         
