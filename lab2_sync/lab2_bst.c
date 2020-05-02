@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "lab2_sync_types.h"
 
