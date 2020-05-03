@@ -296,13 +296,15 @@ int lab2_node_remove(lab2_tree *tree, int key)
     lab2_node *successor;
     lab2_node *child;
     int state = 0; //FALSE
-
+    int cond = 0;
     while (leaf != NULL)
     {
         premove = remove;
         remove = leaf;
-        if (remove->key == key)
-            break; //i find a key 
+        if (remove->key == key){
+            break; //i find a key
+            cond = 1;
+        } 
         else if (remove->key < key)
             leaf = leaf->right;
         else
@@ -312,65 +314,68 @@ int lab2_node_remove(lab2_tree *tree, int key)
         1. simple deletion
         2. complex deletion
     */
-    if (remove != NULL) //i find value
-    {
-        //state = true
-        //else if remove has a two child
-        if (remove->left != NULL && remove->right != NULL)
+    if(cond){
+        if (remove != NULL) //i find value
         {
-            //1. find successor
-            successor = remove->right;
-            psuccessor = remove;
-            while (successor->left != NULL)
+            //state = true
+            //else if remove has a two child
+            if (remove->left != NULL && remove->right != NULL)
             {
-                psuccessor = successor;
-                successor = successor->left;
-            }
-            //2. change value with successor
-            remove->key = successor->key;
-            //delete successor
-            if(remove != psuccessor) psuccessor->left = successor->right;//?
-            else remove->right = successor->right;
-            free(successor);successor = NULL;
-            state = 1; //TRUE
-        }
-        //if remove has a child or no child
-        else if (remove->left == NULL || remove->right == NULL)
-        {
-            child = (remove->right == NULL) ? remove->left : remove->right;
-            if(child ==NULL) //Case No Child
-            {
-                if(remove == tree->root){
-                    //tree Deletion
-                    tree->root = NULL;
-                    free(remove); remove = NULL;
-                } 
-                else{// case General
-                    if(premove->left == remove)
-                        premove->left =NULL;
-                    else premove->right = NULL;
-                    free(remove); remove = NULL;
+                //1. find successor
+                successor = remove->right;
+                psuccessor = remove;
+                while (successor->left != NULL)
+                {
+                    psuccessor = successor;
+                    successor = successor->left;
                 }
+                //2. change value with successor
+                remove->key = successor->key;
+                //delete successor
+                if(remove != psuccessor) psuccessor->left = successor->right;//?
+                else remove->right = successor->right;
+                free(successor);successor = NULL;
+                state = 1; //TRUE
             }
-            else // Case one Child
+            //if remove has a child or no child
+            else if (remove->left == NULL || remove->right == NULL)
             {
-                if(remove == tree->root){
-                    //Tree->root = child;
-                    tree->root = child;
-                    free(remove); remove = NULL;
-                } 
-                else{// case General
-                    if(premove->left == remove)
-                        premove->left = child;
-                    else premove->right = child; 
-                    free(remove); remove = NULL;
+                child = (remove->right == NULL) ? remove->left : remove->right;
+                if(child ==NULL) //Case No Child
+                {
+                    if(remove == tree->root){
+                        //tree Deletion
+                        tree->root = NULL;
+                        free(remove); remove = NULL;
+                    } 
+                    else{// case General
+                        if(premove->left == remove)
+                            premove->left =NULL;
+                        else premove->right = NULL;
+                        free(remove); remove = NULL;
+                    }
                 }
+                else // Case one Child
+                {
+                    if(remove == tree->root){
+                        //Tree->root = child;
+                        tree->root = child;
+                        free(remove); remove = NULL;
+                    } 
+                    else{// case General
+                        if(premove->left == remove)
+                            premove->left = child;
+                        else premove->right = child; 
+                        free(remove); remove = NULL;
+                    }
+                }
+                state = 1; //TRUE
             }
-            state = 1; //TRUE
         }
-    }
-    else //Cant find value
-        state = 0;                              //"No such Key"
+        else //Cant find value
+            state = 0;      
+    }                        //"No such Key"
+    pthread_mutex_unlock(&(mutex_Tree));
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
 }
 
@@ -622,14 +627,16 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
     lab2_node *successor =NULL;
     lab2_node *child =NULL;
     int state = 0; //FALSE
-
+    int cond = 0;
     pthread_mutex_lock(&(mutex_Tree));
     while (leaf != NULL)
     {
         premove = remove;
         remove = leaf;
-        if (remove->key == key)
-            break; //i find a key 
+        if (remove->key == key){
+            break; //i find a key
+            cond = 1;
+        } 
         else if (remove->key < key)
             leaf = leaf->right;
         else
@@ -639,65 +646,67 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
         1. simple deletion
         2. complex deletion
     */
-    if (remove != NULL) //i find value
-    {
-        //state = true
-        //else if remove has a two child
-        if (remove->left != NULL && remove->right != NULL)
+    if(cond){
+        if (remove != NULL) //i find value
         {
-            //1. find successor
-            successor = remove->right;
-            psuccessor = remove;
-            while (successor->left != NULL)
+            //state = true
+            //else if remove has a two child
+            if (remove->left != NULL && remove->right != NULL)
             {
-                psuccessor = successor;
-                successor = successor->left;
-            }
-            //2. change value with successor
-            remove->key = successor->key;
-            //delete successor
-            if(remove != psuccessor) psuccessor->left = successor->right;//?
-            else remove->right = successor->right;
-            free(successor);successor = NULL;
-            state = 1; //TRUE
-        }
-        //if remove has a child or no child
-        else if (remove->left == NULL || remove->right == NULL)
-        {
-            child = (remove->right == NULL) ? remove->left : remove->right;
-            if(child ==NULL) //Case No Child
-            {
-                if(remove == tree->root){
-                    //tree Deletion
-                    tree->root = NULL;
-                    free(remove); remove = NULL;
-                } 
-                else{// case General
-                    if(premove->left == remove)
-                        premove->left =NULL;
-                    else premove->right = NULL;
-                    free(remove); remove = NULL;
+                //1. find successor
+                successor = remove->right;
+                psuccessor = remove;
+                while (successor->left != NULL)
+                {
+                    psuccessor = successor;
+                    successor = successor->left;
                 }
+                //2. change value with successor
+                remove->key = successor->key;
+                //delete successor
+                if(remove != psuccessor) psuccessor->left = successor->right;//?
+                else remove->right = successor->right;
+                free(successor);successor = NULL;
+                state = 1; //TRUE
             }
-            else // Case one Child
+            //if remove has a child or no child
+            else if (remove->left == NULL || remove->right == NULL)
             {
-                if(remove == tree->root){
-                    //Tree->root = child;
-                    tree->root = child;
-                    free(remove); remove = NULL;
-                } 
-                else{// case General
-                    if(premove->left == remove)
-                        premove->left = child;
-                    else premove->right = child; 
-                    free(remove); remove = NULL;
+                child = (remove->right == NULL) ? remove->left : remove->right;
+                if(child ==NULL) //Case No Child
+                {
+                    if(remove == tree->root){
+                        //tree Deletion
+                        tree->root = NULL;
+                        free(remove); remove = NULL;
+                    } 
+                    else{// case General
+                        if(premove->left == remove)
+                            premove->left =NULL;
+                        else premove->right = NULL;
+                        free(remove); remove = NULL;
+                    }
                 }
+                else // Case one Child
+                {
+                    if(remove == tree->root){
+                        //Tree->root = child;
+                        tree->root = child;
+                        free(remove); remove = NULL;
+                    } 
+                    else{// case General
+                        if(premove->left == remove)
+                            premove->left = child;
+                        else premove->right = child; 
+                        free(remove); remove = NULL;
+                    }
+                }
+                state = 1; //TRUE
             }
-            state = 1; //TRUE
         }
-    }
-    else //Cant find value
-        state = 0;                              //"No such Key"
+        else //Cant find value
+            state = 0;      
+    }                        //"No such Key"
     pthread_mutex_unlock(&(mutex_Tree));
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
 }
