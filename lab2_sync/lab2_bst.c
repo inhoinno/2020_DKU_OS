@@ -61,7 +61,7 @@ int lab2_node_init_inorder(lab2_tree *tree)
 {
     // You need to implement lab2_node_print_inorder function.
     lab2_node *node = tree->root;
-    if (lab2_node_print(node) < 0)
+    if (lab2_node_init(node) < 0)
         return LAB2_ERROR;
     return LAB2_SUCCESS;
 }
@@ -70,11 +70,11 @@ int lab2_node_init(lab2_node *node)
     if (node == NULL)
         return LAB2_ERROR; //node is NULL
     if (node->left != NULL)
-        lab2_node_print(node->left);
+        lab2_node_init(node->left);
     pthread_mutex_init(&(node->mutex), NULL);
     //printf("%d ", node->key);
     if (node->right != NULL)
-        lab2_node_print(node->right);
+        lab2_node_init(node->right);
     return LAB2_SUCCESS;
 }
 
@@ -475,7 +475,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     successor = leaf;
                     leaf = leaf->left;
                 }
-
+                remove->key = successor->key;
                 if(successor == remove->right){
                     //then 
                     remove->right = successor->right;
@@ -539,7 +539,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
                     psuccessor = successor;
                     successor = leaf;
                     leaf = leaf->left;
-                }
+                }remove->key = successor->key;
 
                 if(successor == remove->right){
                     //then 
