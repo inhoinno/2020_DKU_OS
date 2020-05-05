@@ -173,15 +173,19 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
         }        
         pthread_mutex_unlock(&mutex_Tree);
     }
-    if(cond)
+    while(cond)
     {    
         //#### I. Traverse
         //hand-over-hand lock
         //현재 Tree is not empty
         //Need 3 variable
-        pre = tree->root;
-        pthread_mutex_lock(&(pre->mutex));
-        leaf = (pre->key <= new_node->key) ? pre->right : pre->left;
+        if(cond ==1 ){
+            pre = tree->root;
+            pthread_mutex_lock(&(pre->mutex));
+            leaf = (pre->key <= new_node->key) ? pre->right : pre->left;
+        }else if(cond >=2 ){
+            leaf = pre;
+        }
 
         while (leaf != NULL) // Need to search More
         {
@@ -198,6 +202,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
 
         //#### II. Execution
         pKey = pre->key;
+        //pthread_mutex_lock(&(pre->mutex));
         if (pre != NULL && (pKey == pre->key))
         {
             //condition : 1. insert 2. simple deletion 3.complex deletion
@@ -206,12 +211,12 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
                 pre->left = new_node;
             else
                 pre->right = new_node;
-        }
+            cond =0;
+        }else cond =2;
         pthread_mutex_unlock(&(pre->mutex)); //## UNLOCK ##
     }
     return LAB2_SUCCESS;
 }
-
 /* 
  * TODO
  *  Implement a function which insert nodes from the BST in coarse-garined manner.
@@ -426,7 +431,10 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
         cond =1;
     }
     else leaf = (remove->key < key) ? remove->right: remove->left;
-
+    //loop(loopcond)
+        //if loopcond =2 
+            //then leaf = premove
+     
     while (leaf != NULL)
     {
         pthread_mutex_lock(&(leaf->mutex)); // thread 9 wait
@@ -452,6 +460,8 @@ int lab2_node_remove_fg(lab2_tree *tree, int key)
 
     //#### II. Execution
     if(cond){
+        //lock(premove)
+        //lock(remove)
         if (remove->left != NULL){
             pthread_mutex_lock(&(remove->left->mutex)); //thread 8 wait
             child[LEFT] = 1; }
