@@ -173,7 +173,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node)
         }        
         pthread_mutex_unlock(&mutex_Tree);
     }
-    while(cond)
+    if(cond)
     {    
         //#### I. Traverse
         //hand-over-hand lock
