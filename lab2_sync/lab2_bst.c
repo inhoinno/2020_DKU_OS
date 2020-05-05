@@ -324,7 +324,7 @@ int lab2_node_remove(lab2_tree *tree, int key)
         {
             //state = true
             //else if remove has a two child
-            if (remove->left != NULL && remove->right != NULL)
+            if ((remove->left != NULL) && (remove->right != NULL))
             {
                 //1. find successor
                 successor = remove->right;
@@ -343,7 +343,7 @@ int lab2_node_remove(lab2_tree *tree, int key)
                 state = 1; //TRUE
             }
             //if remove has a child or no child
-            else if (remove->left == NULL || remove->right == NULL)
+            else if ((remove->left == NULL) || (remove->right == NULL))
             {
                 child = (remove->right == NULL) ? remove->left : remove->right;
                 if(child ==NULL) //Case No Child
@@ -380,7 +380,6 @@ int lab2_node_remove(lab2_tree *tree, int key)
         else //Cant find value
             state = 0;      
     }                        //"No such Key"
-    pthread_mutex_unlock(&(mutex_Tree));
     return (state) ? LAB2_SUCCESS : LAB2_ERROR; //error : No such Key
 }
 
