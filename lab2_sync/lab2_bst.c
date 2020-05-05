@@ -307,8 +307,9 @@ int lab2_node_remove(lab2_tree *tree, int key)
         premove = remove;
         remove = leaf;
         if (remove->key == key){
-            break; //i find a key
+            
             cond = 1;
+            break; //i find a key
         } 
         else if (remove->key < key)
             leaf = leaf->right;
@@ -643,8 +644,8 @@ int lab2_node_remove_cg(lab2_tree *tree, int key)
         premove = remove;
         remove = leaf;
         if (remove->key == key){
+            cond = 1; 
             break; //i find a key
-            cond = 1;
         } 
         else if (remove->key < key)
             leaf = leaf->right;
