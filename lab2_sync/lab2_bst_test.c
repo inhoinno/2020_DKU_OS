@@ -111,11 +111,11 @@ void bst_test(int num_threads,int node_count){
     int *data = (int*)malloc(sizeof(int)*node_count);
     //open two file 1. Insert.csv
     char * buf = (char *)malloc(sizeof(char )* 64);
-    int fd_insert = open("./insert.csv", O_APPEND);
+    int fd_insert = open("./insert.csv", O_WRONLY|O_APPEND);
     if(fd_insert <0) fd_insert = open("./insert.csv", O_CREAT|O_RDWR , 0664);
         if(fd_insert<0) write(STDERR_FILENO, "Insert.csv Error\n\0", 24);
     //2. Delete.scv
-    int fd_remove = open("./remove.csv", O_APPEND);
+    int fd_remove = open("./remove.csv", O_WRONLY|O_APPEND);
     if(fd_remove <0) fd_remove = open("./remove.csv", O_CREAT|O_RDWR , 0664);
     if(fd_remove <0) write(STDERR_FILENO, "delete.csv Error\n\0", 24);
 
