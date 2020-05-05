@@ -52,7 +52,7 @@ int lab2_node_print(lab2_node *node)
         return LAB2_ERROR; //node is NULL
     if (node->left != NULL)
         lab2_node_print(node->left);
-    //printf("%d ", node->key);
+    printf("%d ", node->key);
     if (node->right != NULL)
         lab2_node_print(node->right);
     return LAB2_SUCCESS;
