@@ -110,14 +110,14 @@ void bst_test(int num_threads,int node_count){
     thread_arg *threads;
     int *data = (int*)malloc(sizeof(int)*node_count);
     //open two file 1. Insert.csv
-    char * buf = (char *)malloc(sizeof(char )* 64);
-    int fd_insert = open("./insert.csv", O_WRONLY|O_APPEND);
-    if(fd_insert <0) fd_insert = open("./insert.csv", O_CREAT|O_RDWR , 0664);
-        if(fd_insert<0) write(STDERR_FILENO, "Insert.csv Error\n\0", 24);
-    //2. Delete.scv
-    int fd_remove = open("./remove.csv", O_WRONLY|O_APPEND);
-    if(fd_remove <0) fd_remove = open("./remove.csv", O_CREAT|O_RDWR , 0664);
-    if(fd_remove <0) write(STDERR_FILENO, "delete.csv Error\n\0", 24);
+    // char * buf = (char *)malloc(sizeof(char )* 64);
+    // int fd_insert = open("./insert.csv", O_WRONLY|O_APPEND);
+    // if(fd_insert <0) fd_insert = open("./insert.csv", O_CREAT|O_RDWR , 0664);
+    //     if(fd_insert<0) write(STDERR_FILENO, "Insert.csv Error\n\0", 24);
+    // //2. Delete.scv
+    // int fd_remove = open("./remove.csv", O_WRONLY|O_APPEND);
+    // if(fd_remove <0) fd_remove = open("./remove.csv", O_CREAT|O_RDWR , 0664);
+    // if(fd_remove <0) write(STDERR_FILENO, "delete.csv Error\n\0", 24);
 
     srand(time(NULL));
     for (i=0; i < node_count; i++) { 
@@ -167,9 +167,9 @@ void bst_test(int num_threads,int node_count){
     gettimeofday(&tv_insert_end, NULL);
     exe_time = get_timeval(&tv_insert_start, &tv_insert_end);
     print_result(tree,num_threads, node_count, is_sync,LAB2_OPTYPE_INSERT ,exe_time);
-    sprintf(buf, "%d,%d,%d,%lf, \n",is_sync, num_threads, node_count, exe_time );
-    write(fd_insert, buf, strlen(buf));
-    buf[0] = '\0';
+    // sprintf(buf, "%d,%d,%d,%lf, \n",is_sync, num_threads, node_count, exe_time );
+    // write(fd_insert, buf, strlen(buf));
+    // buf[0] = '\0';
     lab2_tree_delete(tree);
 
     /*
@@ -196,9 +196,9 @@ void bst_test(int num_threads,int node_count){
     gettimeofday(&tv_insert_end, NULL);
     exe_time = get_timeval(&tv_insert_start, &tv_insert_end);
     print_result(tree,num_threads, node_count, is_sync, LAB2_OPTYPE_INSERT,exe_time);
-    sprintf(buf, "%d,%d,%d,%lf, \n",is_sync, num_threads, node_count, exe_time );
-    write(fd_insert, buf, strlen(buf));
-    buf[0] = '\0';
+    // sprintf(buf, "%d,%d,%d,%lf, \n",is_sync, num_threads, node_count, exe_time );
+    // write(fd_insert, buf, strlen(buf));
+    // buf[0] = '\0';
     lab2_tree_delete(tree);
     
     /* 
@@ -253,9 +253,9 @@ void bst_test(int num_threads,int node_count){
     exe_time = get_timeval(&tv_delete_start, &tv_delete_end);
 
     print_result(tree,num_threads, node_count, is_sync,LAB2_OPTYPE_DELETE,exe_time);
-    sprintf(buf, "%d,%d,%d,%lf \n",is_sync, num_threads, node_count, exe_time );
-    write(fd_remove, buf, strlen(buf));
-    buf[0] = '\0';
+    // sprintf(buf, "%d,%d,%d,%lf \n",is_sync, num_threads, node_count, exe_time );
+    // write(fd_remove, buf, strlen(buf));
+    // buf[0] = '\0';
     lab2_tree_delete(tree);
 
     /* 
@@ -290,14 +290,14 @@ void bst_test(int num_threads,int node_count){
     exe_time = get_timeval(&tv_delete_start, &tv_delete_end);
 
     print_result(tree ,num_threads, node_count, is_sync, LAB2_OPTYPE_DELETE,exe_time);
-    sprintf(buf, "%d,%d,%d,%lf, \n",is_sync, num_threads, node_count, exe_time );
-    write(fd_remove, buf, strlen(buf));
-    buf[0] = '\0';
+    // sprintf(buf, "%d,%d,%d,%lf, \n",is_sync, num_threads, node_count, exe_time );
+    // write(fd_remove, buf, strlen(buf));
+    // buf[0] = '\0';
     lab2_tree_delete(tree);
 
     printf("\n");
-    close(fd_insert);
-    close(fd_remove);
+    // close(fd_insert);
+    // close(fd_remove);
     free(threads);
     free(data);
 }
